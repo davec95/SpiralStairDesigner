@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IRC Spiral Stair Checker — Spiral Stair Headroom Calculator</title>
+<!-- Security: CSP meta tags (client-side mitigation) -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="X-Frame-Options" content="DENY">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -159,7 +163,7 @@ const IRC_MIN_HR = 78;
 const IRC_RISE_MIN = 7;        // uniform rise band used by this checker
 const IRC_RISE_MAX = 9.5;      // IRC spiral max riser (R311.7.9 / R311.7.5.1)
 const WL_OFFSET = 12;          // IRC: 12" from inner rail (pole edge)
-const WL_OVERHANG = 1.0;       // ½" past nose + ½" past heel
+const WL_OVERHANG = 1.25;      // Legal maximum: ½" past nose + ¾" past heel
 const WL_GREEN = 7.5;          // plate depth ≥ 7.5"
 const WL_YELLOW = 6.75;        // plate depth 6.75–7.4"
 
@@ -296,14 +300,18 @@ function stepColor(headroom) {
     return '#3498db';
 }
 
-/** Plate depth at the walkline (going + 1"). Green >7.5, yellow 6.75–7.5, red <6.75. */
-function walklineColor(Lphys) {
-    if (Lphys >= WL_GREEN) return '#2ecc71';
-    if (Lphys >= WL_YELLOW) return '#f1c40f';
-    return '#e74c3c';
+/** Plate depth at the walkline (going + 1"). Green ≥7.5", yellow 6.75–7.5", red <6.75".
+ *  Also checks IRC minimum going (≥6.00" at nosing); red if either going or plate fails. */
+function walklineColor(Lphys, Lgoing) {
+    // IRC minimums: going ≥ 6.00", plate ≥ 6.75"
+    if (Lgoing < 6.00 || Lphys < 6.75) return '#e74c3c';  // Red if either fails
+    if (Lphys >= WL_GREEN) return '#2ecc71';               // Green ≥ 7.5"
+    if (Lphys >= WL_YELLOW) return '#f1c40f';              // Yellow 6.75–7.5"
+    return '#e74c3c';                                      // Red if plate < 6.75"
 }
 
-function walklineBadgeClass(Lphys) {
+function walklineBadgeClass(Lphys, Lgoing) {
+    if (Lgoing < 6.00 || Lphys < 6.75) return 'wl-badge wl-red';
     if (Lphys >= WL_GREEN) return 'wl-badge wl-green';
     if (Lphys >= WL_YELLOW) return 'wl-badge wl-yellow';
     return 'wl-badge wl-red';
@@ -339,13 +347,13 @@ function calc() {
 
     const thetaRad = THETA * Math.PI / 180;
     const stepsPerRev = 360 / THETA;
-    const Lgoing = Math.round(WALK_RAD * thetaRad * 100) / 100;        // nosing-to-nosing at walkline
-    const Lphys = Lgoing + WL_OVERHANG;                                 // plate: +½" nose + ½" heel
-    const LgoingOuter = Math.round(RADIUS * thetaRad * 100) / 100;
+    const Lgoing = WALK_RAD * thetaRad;                                  // nosing-to-nosing at walkline (unrounded for color logic)
+    const Lphys = Lgoing + WL_OVERHANG;                                  // plate: +1.25" legal max
+    const LgoingOuter = RADIUS * thetaRad;
     const LphysOuter = LgoingOuter + WL_OVERHANG;
-    const wlColor = walklineColor(Lphys);
+    const wlColor = walklineColor(Lphys, Lgoing);                        // Color uses unrounded values
     const badge = document.getElementById('wlBadge');
-    badge.className = walklineBadgeClass(Lphys);
+    badge.className = walklineBadgeClass(Lphys, Lgoing);
     badge.textContent = Lphys.toFixed(2) + '" plate  (going ' + Lgoing.toFixed(2) + '")';
 
     // N equal risers floor→floor. Last riser is onto the landing, so pie count is N−1.
@@ -432,8 +440,8 @@ function calc() {
         ' &nbsp;|&nbsp; Orient: <span class="highlight">' + ORIENT + '°</span>' +
         ' &nbsp;|&nbsp; Ascent: <span class="highlight">' + (climbCCW ? 'CCW' : 'CW') + '</span></p>' +
         '<p>Walkline r = ' + POST_DIA.toFixed(1) + '/2 + 12 = <span class="highlight">' + WALK_RAD.toFixed(2) +
-        '"</span> &nbsp;|&nbsp; Walkline going r·θ = (2π r)/(360/θ) = <span class="highlight">' + Lgoing.toFixed(3) +
-        '"</span> &nbsp;|&nbsp; Plate = going + 1" = <span class="highlight">' + Lphys.toFixed(3) +
+        ' &nbsp;|&nbsp; Walkline going r·θ = (2π r)/(360/θ) = <span class="highlight">' + Lgoing.toFixed(3) +
+        '"</span> &nbsp;|&nbsp; Plate = going + 1.25" = <span class="highlight">' + Lphys.toFixed(3) +
         '"</span> ' + wlStatus + '</p>' +
         '<p>Outer (r=' + RADIUS.toFixed(1) + '") going / plate: <span class="highlight">' +
         LgoingOuter.toFixed(2) + '" / ' + LphysOuter.toFixed(2) + '"</span></p>' +
@@ -509,7 +517,7 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, SPIRAL_DI
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    const wlCol = walklineColor(Lphys);
+    const wlCol = walklineColor(Lphys, Lgoing);
     // Full walkline circle (12" from pole edge) — faint track
     ctx.strokeStyle = wlCol;
     ctx.globalAlpha = 0.25;
