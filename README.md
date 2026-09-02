@@ -25,7 +25,7 @@ The Spiral Staircase Project includes:
 3. Adjust parameters to verify your staircase design
 
 ### Online Access
-Visit the hosted version at: [Deer Park Spiral Stair Project](https://davec95.github.io/SpiralStairDesigner/)
+Visit the hosted version at: https://davec95.github.io/SpiralStairDesigner/
 
 ## Technical Details
 
