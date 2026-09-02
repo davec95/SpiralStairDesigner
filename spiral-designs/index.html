@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spiral Stair Designer CAD Outputs</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background: #1e1e1e;
+    color: #d0d0d0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 40px;
+}
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+h1 {
+    color: #5dade2;
+    margin-bottom: 20px;
+}
+.subtitle {
+    color: #888;
+    margin-bottom: 30px;
+}
+ul {
+    list-style: none;
+}
+li {
+    margin: 15px 0;
+}
+a {
+    color: #5dade2;
+    text-decoration: none;
+    font-size: 1.1em;
+}
+a:hover {
+    color: #85a6d4;
+}
+.description {
+    color: #aaa;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Spiral Stair Designer CAD Outputs</h1>
+    <div class="subtitle">FreeCAD-generated 3D models and construction documents</div>
+    
+    <ul>
+        <li>
+            <a href="SpiralStairDesigner.FCStd">SpiralStairDesigner.FCStd</a>
+            <div class="description">FreeCAD source file — open in GUI to view/edit, print PDF</div>
+        </li>
+        <li>
+            <a href="SpiralStairDesigner.step">SpiralStairDesigner.step</a>
+            <div class="description">STEP file — 3D model for CAD software (SolidWorks, Fusion 360, etc.)</div>
+        </li>
+        <li>
+            <a href="SpiralStairDesigner.dxf">SpiralStairDesigner.dxf</a>
+            <div class="description">DXF file — 2D drawing for CNC/machining</div>
+        </li>
+        <li>
+            <a href="SpiralStairDesigner.svg">SpiralStairDesigner.svg</a>
+            <div class="description">SVG notes — browser-readable dimension notes</div>
+        </li>
+        <li>
+            <a href="SpiralStairDesigner.py">SpiralStairDesigner.py</a>
+            <div class="description">FreeCAD macro script — regenerate the model</div>
+        </li>
+    </ul>
+</div>
+</body>
+</html>
