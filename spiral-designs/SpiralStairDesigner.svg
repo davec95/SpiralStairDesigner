@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="420mm" height="297mm" viewBox="0 0 1587 1123">
+  <rect width="100%" height="100%" fill="white"/>
+  <text x="40" y="50" font-size="28" font-family="sans-serif">SpiralStairDesigner — A3 notes</text>
+  <text x="40" y="90" font-size="16" font-family="sans-serif">Overall diameter 72 in · equal rise 138.07/19 ≈ 7.266842 in (label 7.27 in) · floor-to-floor 138.07 in</text>
+  <text x="40" y="115" font-size="16" font-family="sans-serif">θ = 24.5° · ~14.694 treads/rev counter-clockwise · 18 pie treads + 36×36×3 in square landing · 19 equal risers</text>
+  <text x="40" y="140" font-size="16" font-family="sans-serif">Landing Z = 138.07 in (last pie ≈ 130.803 in, last riser = h) · pie + platform 3 in soffit-to-surface</text>
+  <text x="40" y="165" font-size="16" font-family="sans-serif">Pole 4 in dia + 36 in above landing (pole top 174.07) · platform rail Z = 174.07</text>
+  <text x="40" y="190" font-size="16" font-family="sans-serif">Handrail 1.5 in dia · platform balusters 4 in OC · baluster ½ in dia</text>
+  <text x="40" y="215" font-size="16" font-family="sans-serif">Outer plate arc ≈ 16.39 in · IRC walkline r = 14 in going ≈ 5.986 in (FAIL 6.00 by 0.014)</text>
+  <text x="40" y="240" font-size="16" font-family="sans-serif">Under-landing headroom steps 4–7 (step 7 = 84.20 in); step 8 not under plate</text>
+</svg>
