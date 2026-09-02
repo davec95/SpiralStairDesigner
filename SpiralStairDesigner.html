@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IRC Spiral Stair Checker — Spiral Stair Headroom Calculator</title>
+<!-- Security: CSP meta tags (client-side mitigation) -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="X-Frame-Options" content="DENY">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background: #1e1e1e; color: #d0d0d0; font-family: 'Segoe UI', Consolas, monospace;
+    padding: 16px; font-size: 14px; line-height: 1.5;
+}
+h1 { color: #5dade2; font-size: 1.4em; margin-bottom: 4px; }
+.subtitle { color: #888; font-size: 0.85em; margin-bottom: 16px; }
+.section-label { color: #f0c674; font-weight: bold; margin-top: 16px; margin-bottom: 6px; font-size: 1em; border-bottom: 1px solid #444; padding-bottom: 3px; }
+.controls { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 12px; }
+.control-group { min-width: 200px; }
+.control-group label { display: block; font-size: 0.8em; color: #aaa; margin-bottom: 2px; }
+.control-group .val { color: #5dade2; font-weight: bold; font-size: 1em; }
+input[type=range] { width: 100%; accent-color: #5dade2; }
+input[type=number] {
+    background: #2a2a2a; color: #5dade2; border: 1px solid #555;
+    padding: 4px 8px; font-size: 1em; width: 100px;
+    font-family: 'Segoe UI', Consolas, monospace;
+}
+input[type=number]:focus { outline: 1px solid #5dade2; border-color: #5dade2; }
+.fixed-val { color: #aaa; font-style: italic; margin-top: 4px; }
+canvas { display: block; margin: 8px 0; background: #111; border: 1px solid #333; width: 100%; height: auto; }
+table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 0.85em; }
+th { background: #2a2a2a; color: #f0c674; text-align: right; padding: 4px 8px; border-bottom: 2px solid #f0c674; position: sticky; top: 0; }
+th:first-child { text-align: center; }
+td { text-align: right; padding: 3px 8px; border-bottom: 1px solid #333; }
+td:first-child { text-align: center; color: #aaa; }
+tr:hover td { background: #2a2a2a; }
+td.headroom-critical { color: #e74c3c; font-weight: bold; }
+td.headroom-ok { color: #2ecc71; }
+td.headroom-warn { color: #f39c12; font-weight: bold; }
+td.headroom-open { color: #888; font-style: italic; }
+.summary { background: #2a2a2a; padding: 10px 14px; margin: 8px 0; border-radius: 4px; font-size: 0.9em; }
+.summary .highlight { color: #5dade2; font-weight: bold; }
+.summary .warn { color: #f39c12; }
+.summary .ok { color: #2ecc71; }
+.notes { color: #777; font-size: 0.8em; margin-top: 8px; }
+.wl-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-weight: bold; color: #111; }
+.wl-green { background: #2ecc71; }
+.wl-yellow { background: #f1c40f; }
+.wl-red { background: #e74c3c; color: #fff; }
+.dir-toggle { display: flex; gap: 6px; margin-top: 4px; }
+.dir-btn {
+    background: #2a2a2a; color: #aaa; border: 1px solid #555;
+    padding: 4px 14px; font-size: 0.95em; cursor: pointer;
+    font-family: 'Segoe UI', Consolas, monospace; border-radius: 3px;
+}
+.dir-btn:hover { border-color: #5dade2; color: #d0d0d0; }
+.dir-btn.active { background: #1a4a6a; color: #5dade2; border-color: #5dade2; font-weight: bold; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+</style>
+</head>
+<body>
+<h1>IRC Spiral Stair Checker</h1>
+<div class="subtitle">Spiral Stair Headroom Calculator — nose-to-soffit at each step</div>
+
+<div class="section-label">Controls</div>
+<div class="controls">
+    <div class="control-group">
+        <label for="theta">Theta (degrees per step): <span class="val" id="thetaVal">24.5</span>°</label>
+        <span class="sr-only">Theta degrees per step, range 10 to 60</span>
+        <input type="range" id="theta" min="10" max="60" step="0.1" value="24.5">
+    </div>
+    <div class="control-group">
+        <label for="nRises">Rises (floor→floor, incl. onto platform): <span class="val" id="nRisesVal">19</span>
+            &nbsp;→&nbsp; uniform <span class="val" id="riseVal">7.27</span>"</label>
+        <span class="sr-only">Number of uniform rises, range 15 to 19</span>
+        <input type="range" id="nRises" min="15" max="19" step="1" value="15">
+        <div class="fixed-val" id="riseRangeHint">Legal N for 7–9.5″ uniform rise</div>
+    </div>
+    <div class="control-group">
+        <label for="thick">Tread/Platform Thickness: <span class="val" id="thickVal">3.0</span>"</label>
+        <span class="sr-only">Tread thickness, range 1 to 4 inches</span>
+        <input type="range" id="thick" min="1" max="4" step="0.5" value="3">
+    </div>
+    <div class="control-group">
+        <label for="floorH">Floor-to-Floor Height:</label>
+        <span class="sr-only">Floor to floor height in inches</span>
+        <input type="number" id="floorH" value="138.07" step="0.25" min="60" max="240">
+    </div>
+    <div class="control-group">
+        <label for="postDia">Center Post Diameter:</label>
+        <span class="sr-only">Center post diameter in inches</span>
+        <input type="number" id="postDia" value="4" step="0.5" min="1" max="12">
+    </div>
+    <div class="control-group">
+        <label for="spiralDia">Spiral Diameter:</label>
+        <span class="sr-only">Spiral diameter in inches</span>
+        <input type="number" id="spiralDia" value="72" step="1" min="36" max="120">
+    </div>
+    <div class="control-group">
+        <label for="orient">Orientation offset: <span class="val" id="orientVal">10</span>° (step 1 heel from top)</label>
+        <span class="sr-only">Orientation offset in degrees, range 0 to 359</span>
+        <input type="range" id="orient" min="0" max="359" step="1" value="10">
+    </div>
+    <div class="control-group">
+        <label>Ascent (from above)</label>
+        <span class="sr-only">Ascent direction, clockwise or counter-clockwise</span>
+        <div class="dir-toggle">
+            <button type="button" id="dirCW" class="dir-btn">CW</button>
+            <button type="button" id="dirCCW" class="dir-btn active">CCW</button>
+        </div>
+    </div>
+</div>
+
+<div class="fixed-val">
+    Outer radius = <span id="radiusVal">36</span>"
+    &nbsp;|&nbsp; Walkline r = pole edge + 12" = <span id="walkPathVal">14</span>"
+    &nbsp;|&nbsp; Landing plan span = 90° <span id="landDirLabel">clockwise</span> from last pie nose
+    &nbsp;|&nbsp; Walkline depth <span id="wlBadge" class="wl-badge wl-green">—</span>
+</div>
+
+<div class="section-label">Visualization</div>
+<canvas id="vizCanvas"></canvas>
+
+<div class="section-label">Results Summary</div>
+<div id="summaryBox" class="summary"></div>
+
+<div class="section-label">Step Table — Overhead (platform = going overlap; helix soffit at the nose)</div>
+<div style="overflow-x: auto;">
+<table id="stepTable">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Height (")</th>
+            <th>Nose (°)</th>
+            <th>Walking Z (")</th>
+            <th>Overhead</th>
+            <th>Soffit Z (")</th>
+            <th>Headroom (")</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody id="stepBody"></tbody>
+</table>
+</div>
+
+<div class="notes">
+    <p><b>Headroom</b> = underside Z of the soffit over this step, minus walking Z. Helix pie soffits are sampled at the <b>nose</b> <code>i · θ</code> (front of the tread), not the heel <code>(i−1) · θ</code>. Shared nosing lines (0° area) are not overhead. <b>PLATFORM</b> in the Overhead column is going-overlap with the 90° square — not a single radial. A pie whose going sits under the square is PLATFORM even if its nose has already cleared the far edge (default: #7 most-of-going under, nose 0.5° past) or if only the nose half is under (default: #4). Full vs (partial) is both-ends-in vs sliver. Pie numbers sit at mid-going, matching that overlap.</p>
+    <p>Pie tread k occupies the going behind its nose: plan sector <code>((k−1)·θ, k·θ]</code>. The soffit is <code>k · rise − thickness</code>.</p>
+    <p>36×36 landing occupies 90° in the climb direction from the last pie <b>nose</b> (same as the square with the pole at a corner). That is one full tread past the last going, then <code>90° − θ</code> more. Its soffit is <code>floor-to-floor − thickness</code>. If both a pie and the landing cover the step, the lower soffit wins.</p>
+    <p><b>Orientation offset</b> rotates the whole plan 0–359° (1° steps). 0° = step 1 heel at the top. Positive offset is in the climb direction. <b>CW/CCW</b> is ascent as viewed from above.</p>
+    <p>Step #0 = ground at 0°. Steps #1…N−1 are pie treads. <b>Rises</b> N is floor-to-floor count including the last rise onto the platform; uniform rise = floor-to-floor / N, constrained to 7–9.5″. <b>Height</b> of pie i = i × rise. Platform height = N × rise = floor-to-floor. Open well = nothing in plan above that nose.</p>
+    <p>IRC R311.7.2 minimum is 78" (6'8"), measured vertically from the nosing.</p>
+    <p><b>Walkline</b> is 12" from the pole-side (narrow) edge of the tread — not from pole center. Nosing-to-nosing depth = r_wl · θ_rad = (2π r_wl) / treads-per-turn. Plate depth = going + 1" (½" past nose + ½" past heel). Color on the plan spiral: green ≥ 7.5", yellow 6.75–7.5", red < 6.75". The IRC 6" narrow-end minimum is a <b>winder</b> rule, not used here. True spirals are IRC R311.7.10.1 (walkline ≥ 6¾").</p>
+    <p><b>Going</b> is the arc length along the walkline (12" from the pole edge) between the nosings of two adjacent treads — i.e. r_wl · θ (radians). At θ = 24.5° this is ~6.0" for a 72" dia spiral. It's the separation between consecutive nosings measured at the walking path.</p>
+    <p><b>Plate</b> is the usable tread arc length at the walkline: going + 1" (½" past the nose, ½" past the heel). This is what you actually step on — the tread extends slightly beyond each nosing so the tread material doesn't end right at the nosing line. The color badge shows whether the plate is ≥ 7.5" (green / plenty), 6.75–7.49" (yellow / IRC minimum for spirals is 6¾").</p>
+</div>
+
+<script>
+const LANDING_SPAN = 90; // square landing, degrees
+const IRC_MIN_HR = 78;
+const IRC_RISE_MIN = 7;        // uniform rise band used by this checker
+const IRC_RISE_MAX = 9.5;      // IRC spiral max riser (R311.7.9 / R311.7.5.1)
+const WL_OFFSET = 12;          // IRC: 12" from inner rail (pole edge)
+const WL_OVERHANG = 1.0;       // ½" past nose + ½" past heel
+const WL_GREEN = 7.5;          // plate depth ≥ 7.5"
+const WL_YELLOW = 6.75;        // plate depth 6.75–7.4"
+
+/** Integer N such that FLOOR_H/N is in [7, 9.5]. Last of the N risers is onto the platform. */
+function legalRiseCountRange(floorH) {
+    const nMin = Math.max(1, Math.ceil(floorH / IRC_RISE_MAX - 1e-12));
+    const nMax = Math.max(nMin, Math.floor(floorH / IRC_RISE_MIN + 1e-12));
+    return { nMin, nMax };
+}
+
+/** Range thumb is inverted vs N so left = min rise (max N) and right = max rise (min N). */
+function sliderToN(sliderVal, nMin, nMax) {
+    return nMin + nMax - sliderVal;
+}
+function nToSlider(n, nMin, nMax) {
+    return nMin + nMax - n;
+}
+
+function syncRiseSlider(floorH) {
+    const el = document.getElementById('nRises');
+    const { nMin, nMax } = legalRiseCountRange(floorH);
+    const oldMin = parseInt(el.min, 10);
+    const oldMax = parseInt(el.max, 10);
+    const sv = parseInt(el.value, 10);
+    let n;
+    if (Number.isFinite(oldMin) && Number.isFinite(oldMax) && oldMax >= oldMin && Number.isFinite(sv)) {
+        n = sliderToN(sv, oldMin, oldMax);
+    } else {
+        n = nMax;
+    }
+    if (n < nMin) n = nMin;
+    if (n > nMax) n = nMax;
+    el.min = String(nMin);
+    el.max = String(nMax);
+    el.value = String(nToSlider(n, nMin, nMax));
+    const rise = floorH / n;
+    document.getElementById('nRisesVal').textContent = String(n);
+    document.getElementById('riseVal').textContent = rise.toFixed(2);
+    const hint = document.getElementById('riseRangeHint');
+    hint.textContent = 'Left = min rise (' + (floorH / nMax).toFixed(2) +
+        '", N=' + nMax + ') · right = max rise (' + (floorH / nMin).toFixed(2) +
+        '", N=' + nMin + '). Uniform 7–9.5″, last rise onto the platform.';
+    return { nRises: n, rise };
+}
+
+let climbCCW = true; // true = CCW ascent as viewed from above
+
+function norm360(deg) {
+    let x = deg % 360;
+    if (x < 0) x += 360;
+    return x;
+}
+
+/** True if plan angle `deg` lies in [start, start+span) wrapping 360°. Start edge included, end excluded (shared nosing = 0 area). */
+function inSector(deg, start, span) {
+    let d = (deg - start) % 360;
+    if (d < 0) d += 360;
+    return d >= -1e-12 && d < span - 1e-12;
+}
+
+/**
+ * Positive-measure overlap of pie i going ((i−1)·θ, i·θ] with the 90° landing
+ * [nPies·θ, nPies·θ + 90). Shared nosing (0° area) is not overlap.
+ * Full = the whole going sits in the square; partial = a sliver or most-of-pie.
+ */
+function goingVsLanding(i, THETA, nPies) {
+    const heel = (i - 1) * THETA;
+    const landStart = nPies * THETA;
+    let h = (heel - landStart) % 360;
+    if (h < 0) h += 360;
+    const a0 = h;
+    const a1 = h + THETA;
+    function overlapLen(x0, x1, y0, y1) {
+        return Math.max(0, Math.min(x1, y1) - Math.max(x0, y0));
+    }
+    let ov = 0;
+    for (const shift of [-360, 0, 360]) {
+        ov += overlapLen(a0, a1, shift, shift + LANDING_SPAN);
+    }
+    if (ov <= 1e-9) return { overlap: false, partial: false };
+    const full = ov >= THETA - 1e-9;
+    return { overlap: true, partial: !full };
+}
+
+/**
+ * Soffit over step i.
+ * Helix pie soffits are sampled at the FRONT / nosing radial (i·θ), not the heel ((i−1)·θ).
+ * PLATFORM uses going-overlap with the 90° square (matches the plan: a pie under the
+ * green plate is PLATFORM even if its nose has already cleared the far edge).
+ * k = ceil(i + n·360/θ) is the unique pie whose going contains that nose one or more revs up.
+ */
+function soffitAboveNose(i, THETA, RISE, TREAD_THICK, nPies, platUnderside) {
+    const walkZ = i * RISE;
+    const stepsPerRev = 360 / THETA;
+    let best = null;
+
+    // Next-riser soffit (rise − thickness) is not headroom. Need more than one rise.
+    function consider(z, label, kind) {
+        if (!(z > walkZ + RISE - 1e-9)) return;
+        if (!best || z < best.z) best = { z, label, kind };
+    }
+
+    // Pie k going is ((k−1)·θ, k·θ]. Nose of step i sits in that going one+ revs up
+    // at k = ceil(i + n·360/θ). Shared nosing (0° area) is not a second soffit.
+    for (let n = 1; n <= 4; n++) {
+        const x = i + n * stepsPerRev;
+        const k = Math.ceil(x - 1e-12);
+        if (k >= 1 && k <= nPies) consider(k * RISE - TREAD_THICK, 'Tread #' + k, 'tread');
+    }
+
+    // Square from last pie nose, 90° in the climb direction. Going overlap, not a single radial.
+    // i=0 is the floor at 0° — no pie going behind it.
+    if (i >= 1) {
+        const land = goingVsLanding(i, THETA, nPies);
+        if (land.overlap) {
+            consider(platUnderside, land.partial ? 'PLATFORM (partial)' : 'PLATFORM', 'platform');
+        }
+    }
+
+    return best;
+}
+
+function hrClassAndStatus(headroom) {
+    if (headroom == null) return { hrClass: 'headroom-open', status: 'OPEN WELL' };
+    if (headroom < IRC_MIN_HR) return { hrClass: 'headroom-critical', status: 'TIGHT <78"' };
+    if (headroom < 84) return { hrClass: 'headroom-warn', status: 'OK' };
+    return { hrClass: 'headroom-ok', status: 'PLENTY' };
+}
+
+function stepColor(headroom) {
+    if (headroom == null) return '#666';
+    if (headroom < IRC_MIN_HR) return '#e74c3c';
+    if (headroom < 84) return '#f39c12';
+    return '#3498db';
+}
+
+/** Plate depth at the walkline (going + 1"). Green >7.5, yellow 6.75–7.5, red <6.75. */
+function walklineColor(Lphys) {
+    if (Lphys >= WL_GREEN) return '#2ecc71';
+    if (Lphys >= WL_YELLOW) return '#f1c40f';
+    return '#e74c3c';
+}
+
+function walklineBadgeClass(Lphys) {
+    if (Lphys >= WL_GREEN) return 'wl-badge wl-green';
+    if (Lphys >= WL_YELLOW) return 'wl-badge wl-yellow';
+    return 'wl-badge wl-red';
+}
+
+/** Plan degrees (0 = step-1 heel, increasing in climb direction) → canvas radians.
+ *  Canvas 0 = right, −90° = top. Offset 0 puts step-1 heel at the top. */
+function planToCanvas(planDeg, ORIENT) {
+    const fromTop = climbCCW ? -(ORIENT + planDeg) : (ORIENT + planDeg);
+    return (fromTop - 90) * Math.PI / 180;
+}
+
+function calc() {
+    const THETA = parseFloat(document.getElementById('theta').value);
+    const TREAD_THICK = parseFloat(document.getElementById('thick').value);
+    const FLOOR_H = parseFloat(document.getElementById('floorH').value) || 138.07;
+    const { nRises, rise: RISE } = syncRiseSlider(FLOOR_H);
+    const POST_DIA = parseFloat(document.getElementById('postDia').value) || 4;
+    const SPIRAL_DIA = parseFloat(document.getElementById('spiralDia').value) || 72;
+    const ORIENT = ((parseInt(document.getElementById('orient').value, 10) % 360) + 360) % 360;
+    const RADIUS = SPIRAL_DIA / 2;
+    const POLE_RAD = POST_DIA / 2;
+    const WALK_RAD = POLE_RAD + WL_OFFSET; // 12" from pole-side (narrow) edge, not pole center
+
+    document.getElementById('thetaVal').textContent = THETA.toFixed(1);
+    document.getElementById('thickVal').textContent = TREAD_THICK.toFixed(1);
+    document.getElementById('radiusVal').textContent = RADIUS.toFixed(1);
+    document.getElementById('walkPathVal').textContent = WALK_RAD.toFixed(1);
+    document.getElementById('orientVal').textContent = String(ORIENT);
+    document.getElementById('landDirLabel').textContent = climbCCW ? 'counter-clockwise' : 'clockwise';
+    document.getElementById('dirCW').classList.toggle('active', !climbCCW);
+    document.getElementById('dirCCW').classList.toggle('active', climbCCW);
+
+    const thetaRad = THETA * Math.PI / 180;
+    const stepsPerRev = 360 / THETA;
+    const Lgoing = Math.round(WALK_RAD * thetaRad * 100) / 100;        // nosing-to-nosing at walkline
+    const Lphys = Lgoing + WL_OVERHANG;                                 // plate: +½" nose + ½" heel
+    const LgoingOuter = Math.round(RADIUS * thetaRad * 100) / 100;
+    const LphysOuter = LgoingOuter + WL_OVERHANG;
+    const wlColor = walklineColor(Lphys);
+    const badge = document.getElementById('wlBadge');
+    badge.className = walklineBadgeClass(Lphys);
+    badge.textContent = Lphys.toFixed(2) + '" plate  (going ' + Lgoing.toFixed(2) + '")';
+
+    // N equal risers floor→floor. Last riser is onto the landing, so pie count is N−1.
+    const nPies = Math.max(0, nRises - 1);
+    const platHeight = FLOOR_H;
+    const platUnderside = FLOOR_H - TREAD_THICK;
+
+    const steps = [];
+    let minHR = Infinity, maxHR = -Infinity, minHRStep = null;
+
+    for (let i = 0; i <= nPies; i++) {
+        const overhead = soffitAboveNose(i, THETA, RISE, TREAD_THICK, nPies, platUnderside);
+        const headroom = overhead ? overhead.z - i * RISE : null;
+        const step = {
+            num: i,
+            noseDeg: i * THETA,
+            height: i * RISE,
+            overhead: overhead,
+            soffitZ: overhead ? overhead.z : null,
+            headroom: headroom,
+            isFloor: i === 0
+        };
+        steps.push(step);
+        if (headroom != null) {
+            if (headroom < minHR) { minHR = headroom; minHRStep = i; }
+            if (headroom > maxHR) maxHR = headroom;
+        }
+    }
+
+    const tbody = document.getElementById('stepBody');
+    tbody.innerHTML = '';
+
+    for (const s of steps) {
+        const tr = document.createElement('tr');
+        const numLabel = s.isFloor ? '#0 (floor)' : '#' + s.num;
+        const { hrClass, status } = hrClassAndStatus(s.headroom);
+        const overheadLabel = s.overhead ? s.overhead.label : 'open well';
+        const soffitLabel = s.soffitZ != null ? s.soffitZ.toFixed(2) : '—';
+        const hrLabel = s.headroom != null ? s.headroom.toFixed(2) : '—';
+        tr.innerHTML =
+            '<td>' + numLabel + '</td>' +
+            '<td>' + s.height.toFixed(2) + '</td>' +
+            '<td>' + s.noseDeg.toFixed(1) + '</td>' +
+            '<td>' + s.height.toFixed(2) + '</td>' +
+            '<td>' + overheadLabel + '</td>' +
+            '<td>' + soffitLabel + '</td>' +
+            '<td class="' + hrClass + '">' + hrLabel + '</td>' +
+            '<td class="' + hrClass + '">' + status + '</td>';
+        tbody.appendChild(tr);
+    }
+
+    const platRow = document.createElement('tr');
+    platRow.style.fontStyle = 'italic';
+    platRow.style.color = '#f0c674';
+    const platStartDeg = nPies * THETA;
+    const dirWord = climbCCW ? 'CCW' : 'CW';
+    platRow.innerHTML = '<td>PLATFORM</td><td>' + FLOOR_H.toFixed(2) + '</td><td>' +
+        platStartDeg.toFixed(1) + ' (last nose) → +90° ' + dirWord +
+        ' · orient ' + ORIENT + '°</td><td>' +
+        FLOOR_H.toFixed(2) + '</td><td>upper floor</td><td>' + platUnderside.toFixed(2) +
+        ' (underside)</td><td>—</td><td>36×36" landing</td>';
+    tbody.appendChild(platRow);
+
+    const stepsPer90 = (90 / THETA).toFixed(1);
+    const totalRot = (nPies * THETA / 360).toFixed(2);
+    const hasHR = minHRStep != null;
+    const hrStatus = !hasHR
+        ? '<span class="warn">No overhead soffits at any nose (all open well)</span>'
+        : (minHR < IRC_MIN_HR
+            ? '<span class="warn">⚠ MINIMUM NOSE HEADROOM TIGHT (<78" IRC)</span>'
+            : '<span class="ok">✓ Minimum nose headroom adequate (≥78")</span>');
+
+    const wlStatus = Lphys >= WL_GREEN
+        ? '<span class="ok">✓ Walkline plate ≥ 7.5"</span>'
+        : (Lphys >= WL_YELLOW
+            ? '<span class="warn">Walkline plate 6.75–7.49"</span>'
+            : '<span class="warn">⚠ Walkline plate < 6.74"</span>');
+
+    document.getElementById('summaryBox').innerHTML =
+        '<p>Steps per 90°: <span class="highlight">' + stepsPer90 +
+        '</span> &nbsp;|&nbsp; Pie treads: <span class="highlight">' + nPies +
+        '</span> &nbsp;|&nbsp; Steps per revolution: <span class="highlight">' + stepsPerRev.toFixed(3) +
+        '</span> &nbsp;|&nbsp; Pie rotation: <span class="highlight">' + totalRot + '</span>' +
+        ' &nbsp;|&nbsp; Orient: <span class="highlight">' + ORIENT + '°</span>' +
+        ' &nbsp;|&nbsp; Ascent: <span class="highlight">' + (climbCCW ? 'CCW' : 'CW') + '</span></p>' +
+        '<p>Walkline r = ' + POST_DIA.toFixed(1) + '/2 + 12 = <span class="highlight">' + WALK_RAD.toFixed(2) +
+        '"</span> &nbsp;|&nbsp; Walkline going r·θ = (2π r)/(360/θ) = <span class="highlight">' + Lgoing.toFixed(3) +
+        '"</span> &nbsp;|&nbsp; Plate = going + 1" = <span class="highlight">' + Lphys.toFixed(3) +
+        '"</span> ' + wlStatus + '</p>' +
+        '<p>Outer (r=' + RADIUS.toFixed(1) + '") going / plate: <span class="highlight">' +
+        LgoingOuter.toFixed(2) + '" / ' + LphysOuter.toFixed(2) + '"</span></p>' +
+        '<p style="margin-top:6px;">Helix stack (360/θ)×rise − thickness (only if a mate stacks on the nose): <span class="highlight">' +
+        (stepsPerRev * RISE - TREAD_THICK).toFixed(2) + '"</span> — actual nose headroom uses the soffit that contains that radial.</p>' +
+        '<p style="margin-top:6px;">' + (hasHR
+            ? 'Max nose headroom: <span class="highlight">' + maxHR.toFixed(2) +
+              '"</span> &nbsp;|&nbsp; Min nose headroom: <span class="highlight">' + minHR.toFixed(2) +
+              '"</span> (at Step #' + minHRStep + ')'
+            : 'Min/max nose headroom: <span class="highlight">n/a</span> (open well)') + '</p>' +
+        '<p style="margin-top:6px;">' + hrStatus + '</p>' +
+        '<p style="margin-top:4px; color:#777; font-size:0.85em;">' + nRises +
+        ' uniform risers × ' + RISE.toFixed(2) + '" = ' + FLOOR_H.toFixed(2) +
+        '" floor-to-floor (incl. last rise onto platform). Pies 1–' + nPies +
+        '. Platform 36×36" at ' + FLOOR_H.toFixed(2) +
+        '", underside at ' + platUnderside.toFixed(2) +
+        '". Headroom = soffit directly above the nose − walking Z. Open well is not a number.</p>';
+
+    drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, SPIRAL_DIA, steps, platUnderside, platHeight, nPies, FLOOR_H, Lphys, Lgoing, ORIENT);
+}
+
+function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, SPIRAL_DIA, steps, platUnderside, platHeight, nPies, FLOOR_H, Lphys, Lgoing, ORIENT) {
+    const canvas = document.getElementById('vizCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Responsive canvas: fill parent width, fixed aspect ratio ~2:1
+    // Subtract 48px so the right-side HR labels extend beyond the canvas edge (matching fixed-width behavior)
+    const container = canvas.parentElement;
+    const desiredW = Math.max(container.clientWidth - 48, 1); // -48 for right-side label overflow (was -90 with margin=30, now -48 with margin=85)
+    const desiredH = Math.round(desiredW * 0.5);
+    // Scale device pixel ratio for retina
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(desiredW * dpr);
+    canvas.height = Math.round(desiredH * dpr);
+    canvas.style.width = desiredW + 'px';
+    canvas.style.height = desiredH + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const W = desiredW;
+    const H = desiredH;
+
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, W, H);
+
+    const planW = W * 0.48;
+    const margin = 85;		// Need 85 so HR: xx.x" is not under right side of frame
+    const titleH = 24;
+
+    ctx.fillStyle = '#5dade2';
+    ctx.font = 'bold 14px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('PLAN VIEW — Top Down (color = nose headroom)', margin, titleH);
+
+    const planScale = Math.min(planW - 80, H - 80) / (2 * RADIUS + 20);
+    const planCx = margin + planW / 2;
+    const planCy = margin + H / 2;
+
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(planCx, planCy, RADIUS * planScale, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = '#555';
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(SPIRAL_DIA.toFixed(0) + '" dia', planCx + RADIUS * planScale + 4, planCy - 4);
+
+    ctx.fillStyle = '#888';
+    ctx.beginPath();
+    ctx.arc(planCx, planCy, POLE_RAD * planScale, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#aaa';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    const wlCol = walklineColor(Lphys);
+    // Full walkline circle (12" from pole edge) — faint track
+    ctx.strokeStyle = wlCol;
+    ctx.globalAlpha = 0.25;
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.arc(planCx, planCy, WALK_RAD * planScale, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    for (let i = 1; i <= nPies; i++) {
+        // Pie i going is heel→nose: ((i−1)·θ, i·θ]. Orient/CCW applied in planToCanvas.
+        const startAngle = planToCanvas((i - 1) * THETA, ORIENT);
+        const endAngle = planToCanvas(i * THETA, ORIENT);
+        const ccwArc = climbCCW;
+        const stepData = steps.find(s => s.num === i);
+        const color = stepData ? stepColor(stepData.headroom) : '#3498db';
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.globalAlpha = 0.7;
+
+        ctx.beginPath();
+        ctx.arc(planCx, planCy, RADIUS * planScale, startAngle, endAngle, ccwArc);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(planCx, planCy, POLE_RAD * planScale, startAngle, endAngle, ccwArc);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(planCx + POLE_RAD * planScale * Math.cos(startAngle), planCy + POLE_RAD * planScale * Math.sin(startAngle));
+        ctx.lineTo(planCx + RADIUS * planScale * Math.cos(startAngle), planCy + RADIUS * planScale * Math.sin(startAngle));
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(planCx + POLE_RAD * planScale * Math.cos(endAngle), planCy + POLE_RAD * planScale * Math.sin(endAngle));
+        ctx.lineTo(planCx + RADIUS * planScale * Math.cos(endAngle), planCy + RADIUS * planScale * Math.sin(endAngle));
+        ctx.stroke();
+
+        // Walkline arc on this pie — 12" from pole-side edge, colored by plate depth
+        ctx.strokeStyle = wlCol;
+        ctx.lineWidth = 4;
+        ctx.globalAlpha = 1;
+        ctx.beginPath();
+        ctx.arc(planCx, planCy, WALK_RAD * planScale, startAngle, endAngle, ccwArc);
+        ctx.stroke();
+
+        const midPlan = ((i - 1) + 0.5) * THETA;
+        const midA = planToCanvas(midPlan, ORIENT);
+        const labelR = (RADIUS + 8) * planScale;
+        // Nose sample point: FRONT of the tread at i·θ on the walkline (not the midpoint / heel).
+        const noseA = planToCanvas(i * THETA, ORIENT);
+        const nx = planCx + WALK_RAD * planScale * Math.cos(noseA);
+        const ny = planCy + WALK_RAD * planScale * Math.sin(noseA);
+        ctx.fillStyle = color;
+        ctx.globalAlpha = 1;
+        ctx.beginPath();
+        ctx.arc(nx, ny, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#111';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.font = '9px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(i.toString(), planCx + labelR * Math.cos(midA), planCy + labelR * Math.sin(midA));
+    }
+
+    ctx.globalAlpha = 1;
+
+    // Square: local +X along last pie nose; local +Y 90° in the climb direction.
+    const platStartDeg = nPies * THETA;
+    const platAngleRad = planToCanvas(platStartDeg, ORIENT);
+    const platEndRad = planToCanvas(platStartDeg + LANDING_SPAN, ORIENT);
+    ctx.save();
+    ctx.translate(planCx, planCy);
+    ctx.rotate(platAngleRad);
+    const platSize = 36 * planScale;
+    const platY = climbCCW ? -platSize : 0;
+    ctx.fillStyle = '#2ecc71';
+    ctx.globalAlpha = 0.35;
+    ctx.fillRect(0, platY, platSize, platSize);
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = '#2ecc71';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, platY, platSize, platSize);
+    ctx.fillStyle = '#2ecc71';
+    ctx.font = 'bold 10px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('PLAT', platSize / 2, platY + platSize / 2);
+    ctx.restore();
+
+    // Landing 90° sector edges (start = last pie NOSE, not last heel).
+    function spoke(rad, color, dash) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash(dash || []);
+        ctx.beginPath();
+        ctx.moveTo(planCx + POLE_RAD * planScale * Math.cos(rad), planCy + POLE_RAD * planScale * Math.sin(rad));
+        ctx.lineTo(planCx + RADIUS * planScale * Math.cos(rad), planCy + RADIUS * planScale * Math.sin(rad));
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+    spoke(platAngleRad, '#2ecc71', []);
+    spoke(platEndRad, '#2ecc71', [4, 3]);
+
+    ctx.fillStyle = '#777';
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText('theta = ' + THETA.toFixed(1) + '° per step  ·  ' + (climbCCW ? 'CCW' : 'CW') +
+        '  ·  orient ' + ORIENT + '°', margin, H - 52);
+    ctx.fillText('Dots = nose. Pie # at mid-going. Overhead PLATFORM = going under the square (partial = sliver).', margin, H - 66);
+    ctx.fillText((90 / THETA).toFixed(1) + ' steps per 90°', margin, H - 38);
+    ctx.fillStyle = wlCol;
+    ctx.font = 'bold 11px monospace';
+    ctx.fillText('Walkline @ ' + WALK_RAD.toFixed(1) + '"  plate ' + Lphys.toFixed(2) + '"  going ' + Lgoing.toFixed(2) + '"', margin, H - 22);
+
+    const elevW = W * 0.48;
+    ctx.fillStyle = '#5dade2';
+    ctx.font = 'bold 14px monospace';
+    ctx.fillText('ELEVATION — nose headroom to soffit above', W - elevW - margin, titleH);
+
+    const elevScale = (H - 100) / (FLOOR_H + 10);
+    const elevLeft = W - elevW + 20;
+    const elevBottom = H - 60;
+    const elevRight = W - margin - 20;
+
+    ctx.strokeStyle = '#222';
+    ctx.lineWidth = 1;
+    for (let h = 0; h <= FLOOR_H; h += 10) {
+        const y = elevBottom - h * elevScale;
+        ctx.beginPath();
+        ctx.moveTo(elevLeft, y);
+        ctx.lineTo(elevRight, y);
+        ctx.stroke();
+        ctx.fillStyle = '#555';
+        ctx.font = '9px monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(h + '"', elevLeft - 4, y + 3);
+    }
+
+    ctx.strokeStyle = '#888';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(elevLeft, elevBottom);
+    ctx.lineTo(elevRight, elevBottom);
+    ctx.stroke();
+    ctx.fillStyle = '#aaa';
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('Floor (#0)', elevLeft + 4, elevBottom + 16);
+
+    const platLineY = elevBottom - platUnderside * elevScale;
+    ctx.strokeStyle = '#2ecc71';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 4]);
+    ctx.beginPath();
+    ctx.moveTo(elevLeft, platLineY);
+    ctx.lineTo(elevRight, platLineY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#2ecc71';
+    ctx.fillText('Platform Underside', elevLeft + 4, platLineY - 4);
+
+    const platTopY = elevBottom - platHeight * elevScale;
+    ctx.strokeStyle = '#f0c674';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(elevLeft, platTopY);
+    ctx.lineTo(elevRight, platTopY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#f0c674';
+    ctx.fillText('Platform Top', elevLeft + 4, platTopY - 4);
+
+    for (let i = 0; i <= nPies; i++) {
+        const stepH = i * RISE;
+        const stepData = steps.find(s => s.num === i);
+        const color = i === 0 ? '#888' : stepColor(stepData ? stepData.headroom : null);
+        const y = elevBottom - stepH * elevScale;
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(elevLeft, y);
+        ctx.lineTo(elevRight, y);
+        ctx.stroke();
+
+        const label = i === 0 ? '#0' : '#' + i;
+        ctx.fillStyle = color;
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(label, elevLeft - 4, y + 3);
+        ctx.textAlign = 'left';
+        ctx.fillText(stepH.toFixed(2) + '"', elevRight + 4, y + 3);
+
+        if (stepData && stepData.headroom != null && stepData.soffitZ != null) {
+            const hrTop = elevBottom - stepData.soffitZ * elevScale;
+            const hrY = y + 3;  // Position near the step
+            ctx.strokeStyle = '#f0c674';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 2]);
+            ctx.beginPath();
+            ctx.moveTo(elevRight + 45, hrTop);	// +45 so height xx.xx" is not overwritten
+            ctx.lineTo(elevRight + 45, y);	// +45 so height xx.xx" is not overwritten
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = '#f0c674';
+            ctx.font = '9px monospace';
+            ctx.fillText('HR:' + stepData.headroom.toFixed(1) + '"', elevRight + 49, hrY);	// +49 so height xx.xx" is not overwritten
+        }
+    }
+
+    const dimX = elevLeft + 10;
+    ctx.strokeStyle = '#aaa';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(dimX, platTopY);
+    ctx.lineTo(dimX, elevBottom);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#aaa';
+    ctx.beginPath();
+    ctx.moveTo(dimX - 4, platTopY + 6);
+    ctx.lineTo(dimX, platTopY);
+    ctx.lineTo(dimX + 4, platTopY + 6);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(dimX - 4, elevBottom - 6);
+    ctx.lineTo(dimX, elevBottom);
+    ctx.lineTo(dimX + 4, elevBottom - 6);
+    ctx.fill();
+    ctx.font = '11px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(FLOOR_H.toFixed(2) + '"', dimX - 6, (platTopY + elevBottom) / 2 + 4);
+
+    const legendX = W / 2 - 160;
+    const legendY = H - 44;
+    ctx.fillStyle = '#e74c3c';
+    ctx.fillRect(legendX, legendY, 12, 12);
+    ctx.fillStyle = '#d0d0d0';
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('HR < 78"', legendX + 16, legendY + 10);
+
+    ctx.fillStyle = '#f39c12';
+    ctx.fillRect(legendX + 90, legendY, 12, 12);
+    ctx.fillStyle = '#d0d0d0';
+    ctx.fillText('HR 78–84"', legendX + 106, legendY + 10);
+
+    ctx.fillStyle = '#3498db';
+    ctx.fillRect(legendX + 190, legendY, 12, 12);
+    ctx.fillStyle = '#d0d0d0';
+    ctx.fillText('HR 84"+', legendX + 206, legendY + 10);
+
+    // Walkline depth legend
+    const wlLegY = H - 26;
+    ctx.fillStyle = '#2ecc71';
+    ctx.fillRect(legendX, wlLegY, 12, 12);
+    ctx.fillStyle = '#d0d0d0';
+    ctx.fillText('WL > 7.5"', legendX + 16, wlLegY + 10);
+    ctx.fillStyle = '#f1c40f';
+    ctx.fillRect(legendX + 90, wlLegY, 12, 12);
+    ctx.fillStyle = '#d0d0d0';
+    ctx.fillText('WL 6.75–7.5"', legendX + 106, wlLegY + 10);
+    ctx.fillStyle = '#e74c3c';
+    ctx.fillRect(legendX + 210, wlLegY, 12, 12);
+    ctx.fillStyle = '#d0d0d0';
+    ctx.fillText('WL < 6.75"', legendX + 226, wlLegY + 10);
+}
+
+['theta', 'nRises', 'thick', 'floorH', 'postDia', 'spiralDia', 'orient'].forEach(function (id) {
+    const el = document.getElementById(id);
+    el.addEventListener('input', calc);
+    el.addEventListener('change', calc);
+});
+document.getElementById('dirCW').addEventListener('click', function () {
+    climbCCW = false;
+    calc();
+});
+document.getElementById('dirCCW').addEventListener('click', function () {
+    climbCCW = true;
+    calc();
+});
+
+window.addEventListener('resize', function() {
+    const canvas = document.getElementById('vizCanvas');
+    const container = canvas.parentElement;
+    const desiredW = Math.max(container.clientWidth - 48, 1); // matches line 465
+    const desiredH = Math.round(desiredW * 0.5);
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(desiredW * dpr);
+    canvas.height = Math.round(desiredH * dpr);
+    canvas.style.width = desiredW + 'px';
+    canvas.style.height = desiredH + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    calc();
+});
+
+calc();
+</script>
+</body>
+</html>
