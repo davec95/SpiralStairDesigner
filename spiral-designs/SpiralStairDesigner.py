@@ -44,10 +44,10 @@ Landing geometry:
   Extra 65.4° clockwise about the pole after the 17th pie-wedge nose
   (90° − 24.6°; was 60° when θ was 30°, 65.5° when θ was 24.5°):
     a_lead_land = a_lead_17 − 90°
-  Posts/rails on FRONT (Y=0, leading edge) and BACK (Y=36) — NOT left/right radials.
-  Full 36 in edge at 4 in OC: X = 36,32,28,24,20,16,12,8,4,0.
-  Skip FRONT (0,0)=pole and BACK (0,36)=17th shared post.
-  Platform rails: straight, level, parallel to front/back. Helix stops at a_lead_17.
+  Posts/rails on RIGHT (X=0, pole radial) and FRONT (Y=0, leading edge).
+  LEFT (X=36) is the EXIT. BACK (Y=36) stays open (arrival).
+  Full 36 in guarded edges at 4 in OC. Skip pole (0,0) and 17th shared post (0,36).
+  Platform rails: L on right+front. Helix stops at a_lead_17.
   Total pie rotation −418.2°; landing nose 90° CW past 17th.
 """
 
@@ -269,7 +269,7 @@ for i in range(NUM_REGULAR_TREADS):
 # ═══════════════════════════════════════════════════════════════
 # 3.  Landing (upper floor after pie 17) — 36×36 square, 3 in thick
 #     Right-front corner at pole. Extra 65.4° CW past the 17th pie nose.
-#     Posts/rails on FRONT (Y=0) and BACK (Y=36), full 36 in at 4 in OC.
+#     Posts/rails on RIGHT (X=0) and FRONT (Y=0). LEFT is the exit.
 # ═══════════════════════════════════════════════════════════════
 
 z_land = LANDING_Z                                 # 138.07
@@ -310,20 +310,22 @@ print("VERIFY expected (36,0) = ({:.4f}, {:.4f})".format(
 print("VERIFY expected (0,36) = ({:.4f}, {:.4f})".format(
     OUTER_RADIUS * math.cos(A_LEAD_18), OUTER_RADIUS * math.sin(A_LEAD_18)))
 
-# Full 36 in edge at 4 in OC: X = 36,32,...,4,0 (k = 0 .. 9).
-# Skip FRONT (0,0)=pole and BACK (0,36)=17th shared post.
+# Guarded edges at 4 in OC. RIGHT X=0 and FRONT Y=0.
+# Skip pole (0,0) and 17th shared post (0,36). LEFT and BACK stay open.
 for k in range(LANDING_POSTS_PER_SIDE):
-    lx = LANDING_SIZE - float(k) * LANDING_POST_OC
-    if lx > 0.0:
-        Part.show(make_landing_post(lx, 0.0), "LandingPost_F{}".format(k))
-        Part.show(make_landing_post(lx, LANDING_SIZE), "LandingPost_B{}".format(k))
-        baluster_count += 2
+    t = LANDING_SIZE - float(k) * LANDING_POST_OC
+    if t > 0.0:
+        Part.show(make_landing_post(t, 0.0), "LandingPost_F{}".format(k))
+        baluster_count += 1
+        if t < LANDING_SIZE:
+            Part.show(make_landing_post(0.0, t), "LandingPost_R{}".format(k))
+            baluster_count += 1
 
-# Straight, level, parallel platform rails on FRONT and BACK (not left/right).
+# L-shaped platform rails: FRONT (leading edge) + RIGHT (pole radial). LEFT = exit.
 Part.show(make_straight_rail(CENTER_POLE_RADIUS, 0.0, LANDING_SIZE, 0.0),
           "LandingRail_Front")
-Part.show(make_straight_rail(0.0, LANDING_SIZE, LANDING_SIZE, LANDING_SIZE),
-          "LandingRail_Back")
+Part.show(make_straight_rail(0.0, CENTER_POLE_RADIUS, 0.0, LANDING_SIZE),
+          "LandingRail_Right")
 
 # ═══════════════════════════════════════════════════════════════
 # 4.  Spiral handrail  (left-handed helix = CW ascent, stops at 17th last post)
