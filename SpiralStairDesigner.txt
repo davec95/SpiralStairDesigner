@@ -159,30 +159,32 @@ degree     Helix stacking (one full turn, no landing in the way):
           which is the 17th tread's outer nose in PLAN, one equal rise h above that tread's walking surface.
     - The 4" pole passes through the right-front corner. Cut the pole cylinder out of the landing
       (or leave a welded overlap); inner treads already meet the pole at r = 2".
-  * Balusters on the landing (STRAIGHT rows on the RIGHT and FRONT of the square — NOT left, NOT back, NOT on an arc):
-    - WRONG (previous run): FRONT (Y=0) + BACK (Y=36). That put rails on the walker's left and right and forced a STRAIGHT exit off the leading edge.
-    - CORRECT for CW (pole on walker's right): RIGHT (local X=0, pole / 17th-nose radial) + FRONT (local Y=0, leading edge).
-      LEFT (local X=36) is the EXIT onto the upper floor. BACK (local Y=36) stays open (arrival from the last pie).
+  * Balusters on the landing (STRAIGHT rows on FRONT and LEFT — NOT on the arrival radial, NOT on the exit):
+    - WRONG (last run): RIGHT (X=0) + FRONT (Y=0). X=0 is the last-pie nose — posts there block stepping onto the platform.
+    - CORRECT: keep FRONT (Y=0) — that is the walker's RIGHT as they step on from the last pie, facing into the square (+X, away from the pole).
+      Move the blocking row to the OPPOSITE side: LEFT (X=36).
+      RIGHT (X=0) stays OPEN so the walker can step onto the platform from pie 17.
+      BACK (Y=36) stays OPEN — after a 90° left the walker exits there (not straight off the left).
+    - Path: step on at X=0 → walk +X with FRONT rail on the right → 90° left → walk +Y with LEFT rail on the right → exit Y=36.
     - Do NOT place landing posts on a circular arc. Do NOT continue the helical 5-slot pattern onto the landing.
-    - Cover each guarded 36" side at 4 inches on center (not a 4-post cluster at the outer end).
-      36 / 4 = 9 spaces ⇒ 10 stations including both endpoints:
-        t_k = 36 - k * 4    for k = 0 .. 9     →  36, 32, 28, 24, 20, 16, 12, 8, 4, 0
-    - RIGHT (local X = 0):  (0,36), (0,32), (0,28), (0,24), (0,20), (0,16), (0,12), (0,8), (0,4), (0,0)
+    - Cover each guarded 36" side at 4 inches on center.
+      t_k = 36 - k * 4    for k = 0 .. 9     →  36, 32, 28, 24, 20, 16, 12, 8, 4, 0
     - FRONT (local Y =  0):  (36, 0), (32, 0), (28, 0), (24, 0), (20, 0), (16, 0), (12, 0), (8, 0), (4, 0), (0, 0)
-    - RIGHT k at local (0, 36) IS the 17th tread's last baluster (shared helix junction in plan). Skip creating it.
-    - RIGHT/FRONT corner local (0, 0) IS the pole axis. Do not put a post on the pole. Skip creating it.
-    - Create the other 17 posts (8 right + 9 front, including left-front (36,0) as the front-rail end) on Z = 138.07.
-    - Do NOT create posts on LEFT (X=36) except the shared front-rail end at (36,0). Do NOT create posts on BACK (Y=36) except the shared helix post.
+    - LEFT  (local X = 36):  (36,36), (36,32), (36,28), (36,24), (36,20), (36,16), (36,12), (36,8), (36,4), (36,0)
+    - FRONT k at local (0, 0) IS the pole axis. Do not put a post on the pole. Skip creating it.
+    - LEFT (36,0) IS the front-rail outer end — create it once (as a FRONT post). Skip duplicating it on LEFT.
+    - Do NOT create posts on RIGHT (X=0) except the shared helix post at (0,36), which already stands on pie 17.
+    - Do NOT create posts on BACK (Y=36) — that is the exit.
     - Landing posts are LEVEL. Height = HANDRAIL_HEIGHT - HANDRAIL_RADIUS = 36 - 0.75 = 35.25 in
       (meets the underside of the 1.5 in tube). Helix height rule does not apply on the platform.
-  * Platform handrails (STRAIGHT, level — L on RIGHT + FRONT; LEFT is the exit — NOT a continuation of the helix):
+  * Platform handrails (STRAIGHT, level — L on FRONT + LEFT; RIGHT is arrival, BACK is exit):
     - FRONT rail: 1½ in tube, straight, horizontal, along the leading edge (Y=0).
       Box-local from (CENTER_POLE_RADIUS, 0) = (2, 0) to (36, 0). Do not run the tube through the pole.
-      Centreline Z = 138.07 + 36 = 174.07 in.
-    - RIGHT rail: 1½ in tube, straight, horizontal, along the pole / 17th-nose radial (X=0).
-      Box-local from (0, CENTER_POLE_RADIUS) = (0, 2) to (0, 36) (shared 17th post / helix end in plan). Same Z = 174.07 in.
-    - These two rails meet around the pole (right-front). They do NOT sit on the LEFT (exit) or BACK (arrival).
-      They do NOT curve. They do NOT follow the stair helix. Do NOT put a rail on Y=36 (that was the straight-through layout).
+      Centreline Z = 138.07 + 36 = 174.07 in. This is the walker's right as they step on.
+    - LEFT rail: 1½ in tube, straight, horizontal, along X=36 (opposite the arrival radial).
+      Box-local from (36, 0) to (36, 36). Same Z = 174.07 in. This is the walker's right after the 90° left.
+    - Do NOT put a rail on X=0 (that blocked stepping on). Do NOT put a rail on Y=36 (the exit).
+      They do NOT curve. They do NOT follow the stair helix.
 
  - Balusters (regular treads 0–16 only):
    * 5 round balusters per tread, each ½ inch diameter
@@ -216,7 +218,7 @@ TechDraw drawing (produced by the render runner, not by this macro):
     - Annotation block listing: overall diameter 72 in, equal rise 138.07/18 ≈ 7.670556 in (label 7.67 in),
       floor-to-floor 138.07 in, landing Z = 138.07 in (last pie ≈ 130.399 in, last riser = h),
       θ = 24.6°, ~14.634 treads/rev clockwise,
-      landing 36×36×3 in at Z=138.07 in, platform rails RIGHT+FRONT (LEFT exit) 4 in OC,
+      landing 36×36×3 in at Z=138.07 in, platform rails FRONT+LEFT (arrive RIGHT, exit BACK after 90° left) 4 in OC,
       pole 4 in dia + 36 in above landing (pole top 174.07),
       handrail 1.5 in dia at 36 in above walking (platform rail Z = 174.07),
       pie tread 3 in soffit-to-surface, platform 3 in soffit-to-surface,
