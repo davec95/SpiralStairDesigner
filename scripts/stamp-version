@@ -1,0 +1,24 @@
+#!/bin/sh
+# Stamp SpiralStairDesigner.html as vMAJOR.MINOR.BUILD
+# BUILD = git commit count after this commit lands (rev-list --count HEAD + 1).
+# MAJOR.MINOR is left alone (bump those by hand).
+set -e
+root="$(git rev-parse --show-toplevel)"
+file="$root/SpiralStairDesigner.html"
+[ -f "$file" ] || exit 0
+
+# Next commit number (HEAD count + 1). First commit in an empty repo → 1.
+count="$(git rev-list --count HEAD 2>/dev/null || echo 0)"
+build=$((count + 1))
+
+python3 - "$file" "$build" <<'PY'
+import re, sys
+path, build = sys.argv[1], sys.argv[2]
+text = open(path, encoding='utf-8').read()
+new, n = re.subn(r'v(\d+\.\d+)\.\d+', r'v\1.' + build, text, count=0)
+if n == 0:
+    sys.exit(0)
+if new != text:
+    open(path, 'w', encoding='utf-8').write(new)
+    print(f'stamped v*.{build} ({n} replacements) in SpiralStairDesigner.html')
+PY

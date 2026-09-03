@@ -3,15 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IRC Spiral Stair Checker v1.10 — Spiral Stair Headroom Calculator</title>
+<title>IRC Spiral Stair Checker v1.12.17 — Spiral Stair Headroom Calculator</title>
 <!-- Security: CSP meta tags (client-side mitigation) -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
-<meta http-equiv="X-Frame-Options" content="DENY">
+<meta name="color-scheme" content="dark">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+    background: #1e1e1e; color: #d0d0d0; color-scheme: dark;
+    font-family: 'Segoe UI', Consolas, monospace;
+}
 body {
-    background: #1e1e1e; color: #d0d0d0; font-family: 'Segoe UI', Consolas, monospace;
     padding: 16px; font-size: 14px; line-height: 1.5;
 }
 h1 { color: #5dade2; font-size: 1.4em; margin-bottom: 4px; }
@@ -61,22 +64,22 @@ td.headroom-open { color: #888; font-style: italic; }
 </style>
 </head>
 <body>
-<h1>IRC Spiral Stair Checker v1.10</h1>
+<h1>IRC Spiral Stair Checker v1.12.17</h1>
 <div class="subtitle">Spiral Stair Headroom Calculator — nose-to-soffit at each step</div>
 
 <div class="section-label">Controls</div>
 <div class="controls">
     <div class="control-group">
-        <label for="theta">Theta (degrees per step): <span class="val" id="thetaVal">24.5</span>°</label>
+        <label for="theta">Theta (degrees per step): <span class="val" id="thetaVal">24.6</span>°</label>
         <span class="sr-only">Theta degrees per step, range 10 to 60</span>
-        <input type="range" id="theta" min="10" max="60" step="0.1" value="24.5">
+        <input type="range" id="theta" min="10" max="60" step="0.1" value="24.6">
     </div>
     <div class="control-group">
-        <label for="nRises">Rises (floor→floor, incl. onto platform): <span class="val" id="nRisesVal">19</span>
-            &nbsp;→&nbsp; uniform <span class="val" id="riseVal">7.27</span>"</label>
-        <span class="sr-only">Number of uniform rises, range 15 to 19</span>
-        <input type="range" id="nRises" min="15" max="19" step="1" value="15">
-        <div class="fixed-val" id="riseRangeHint">Legal N for 7–9.5″ uniform rise</div>
+        <label for="nRises">Rises (floor→floor, incl. onto platform): <span class="val" id="nRisesVal">18</span>
+            &nbsp;→&nbsp; uniform <span class="val" id="riseVal">7.67</span>"</label>
+        <span class="sr-only">Number of uniform rises. Left is minimum rise, right is maximum rise.</span>
+        <input type="range" id="nRises" min="15" max="18" step="1" value="15">
+        <div class="fixed-val" id="riseRangeHint">Legal N for 7.67–9.5″ uniform rise</div>
     </div>
     <div class="control-group">
         <label for="thick">Tread/Platform Thickness: <span class="val" id="thickVal">3.0</span>"</label>
@@ -99,16 +102,16 @@ td.headroom-open { color: #888; font-style: italic; }
         <input type="number" id="spiralDia" value="72" step="1" min="36" max="120">
     </div>
     <div class="control-group">
-        <label for="orient">Orientation offset: <span class="val" id="orientVal">10</span>° (step 1 heel from top)</label>
+        <label for="orient">Orientation offset: <span class="val" id="orientVal">122</span>° (step 1 heel from top)</label>
         <span class="sr-only">Orientation offset in degrees, range 0 to 359</span>
-        <input type="range" id="orient" min="0" max="359" step="1" value="10">
+        <input type="range" id="orient" min="0" max="359" step="1" value="122">
     </div>
     <div class="control-group">
         <label>Ascent (from above)</label>
         <span class="sr-only">Ascent direction, clockwise or counter-clockwise</span>
         <div class="dir-toggle">
-            <button type="button" id="dirCW" class="dir-btn">CW</button>
-            <button type="button" id="dirCCW" class="dir-btn active">CCW</button>
+            <button type="button" id="dirCW" class="dir-btn active">CW</button>
+            <button type="button" id="dirCCW" class="dir-btn">CCW</button>
         </div>
     </div>
 </div>
@@ -146,37 +149,32 @@ td.headroom-open { color: #888; font-style: italic; }
 </div>
 
 <div class="notes">
-    <p><b>Headroom</b> = underside Z of the soffit over this step, minus walking Z. Helix pie soffits are sampled at the <b>nose</b> <code>i · θ</code> (front of the tread), not the heel <code>(i−1) · θ</code>. Shared nosing lines (0° area) are not overhead. <b>PLATFORM</b> in the Overhead column is going-overlap with the 90° square — not a single radial. A pie whose going sits under the square is PLATFORM even if its nose has already cleared the far edge (default: #7 most-of-going under, nose 0.5° past) or if only the nose half is under (default: #4). Full vs (partial) is both-ends-in vs sliver. Pie numbers sit at mid-going, matching that overlap.</p>
+    <p><b>Headroom</b> = underside Z of the soffit over this step, minus walking Z. Helix pie soffits are sampled at the <b>nose</b> <code>i · θ</code> (front of the tread), not the heel <code>(i−1) · θ</code>. Shared nosing lines (0° area) are not overhead. <b>PLATFORM</b> in the Overhead column is going-overlap with the 90° square — not a single radial. A pie whose going sits under the square is PLATFORM even if its nose has already cleared the far edge, or if only a sliver is under. Full vs (partial) is both-ends-in vs sliver. Default 24.6° / 18 rises: #3 partial, #4–#6 full, #7 partial. Pie numbers sit at mid-going, matching that overlap.</p>
     <p>Pie tread k occupies the going behind its nose: plan sector <code>((k−1)·θ, k·θ]</code>. The soffit is <code>k · rise − thickness</code>.</p>
     <p>36×36 landing occupies 90° in the climb direction from the last pie <b>nose</b> (same as the square with the pole at a corner). That is one full tread past the last going, then <code>90° − θ</code> more. Its soffit is <code>floor-to-floor − thickness</code>. If both a pie and the landing cover the step, the lower soffit wins.</p>
     <p><b>Orientation offset</b> rotates the whole plan 0–359° (1° steps). 0° = step 1 heel at the top. Positive offset is in the climb direction. <b>CW/CCW</b> is ascent as viewed from above.</p>
-    <p>Step #0 = ground at 0°. Steps #1…N−1 are pie treads. <b>Rises</b> N is floor-to-floor count including the last rise onto the platform; uniform rise = floor-to-floor / N, constrained to 7–9.5″. <b>Height</b> of pie i = i × rise. Platform height = N × rise = floor-to-floor. Open well = nothing in plan above that nose.</p>
+    <p>Step #0 = ground at 0°. Steps #1…N−1 are pie treads. <b>Rises</b> N is floor-to-floor count including the last rise onto the platform; uniform rise = floor-to-floor / N, constrained to 7.67–9.5″ (N=19 / 7.27″ is excluded — those packs fail going/headroom). <b>Height</b> of pie i = i × rise. Platform height = N × rise = floor-to-floor. Open well = nothing in plan above that nose.</p>
     <p>IRC R311.7.2 minimum is 78" (6'8"), measured vertically from the nosing.</p>
-    <p><b>Walkline</b> is 12" from the pole-side (narrow) edge of the tread — not from pole center. Nosing-to-nosing depth = r_wl · θ_rad = (2π r_wl) / treads-per-turn. Plate depth = going + 1" (½" past nose + ½" past heel). Color on the plan spiral: green ≥ 7.5", yellow 6.75–7.5", red < 6.75". The IRC 6" narrow-end minimum is a <b>winder</b> rule, not used here. True spirals are IRC R311.7.10.1 (walkline ≥ 6¾").</p>
-    <p><b>Going</b> is the arc length along the walkline (12" from the pole edge) between the nosings of two adjacent treads — i.e. r_wl · θ (radians). At θ = 24.5° this is ~6.0" for a 72" dia spiral. It's the separation between consecutive nosings measured at the walking path.</p>
-    <p><b>Plate</b> is the usable tread arc length at the walkline: going + 1" (½" past the nose, ½" past the heel). This is what you actually step on — the tread extends slightly beyond each nosing so the tread material doesn't end right at the nosing line. The color badge shows whether the plate is ≥ 7.5" (green / plenty), 6.75–7.49" (yellow / IRC minimum for spirals is 6¾").</p>
+    <p><b>Walkline</b> is 12" from the pole-side (narrow) edge of the tread — not from pole center. Nosing-to-nosing depth = r_wl · θ_rad = (2π r_wl) / treads-per-turn. Plate depth = going + 1.25" (½" past nose + ¾" past heel — IRC legal max overhang). Color on the plan spiral: red if going < 6.00" <i>or</i> plate < 6.75"; yellow if plate is 6.75–7.49"; green if plate ≥ 7.5". Spirals are IRC R311.7.10.1 (walkline ≥ 6¾"); going ≥ 6" is also checked because 24.5° fails it at r = 14".</p>
+    <p><b>Going</b> is the arc length along the walkline (12" from the pole edge) between the nosings of two adjacent treads — i.e. r_wl · θ (radians). At θ = 24.6° this is ~6.01" for a 4" pole / 72" dia spiral (the first 0.1° step that clears 6.00"). It's the separation between consecutive nosings measured at the walking path.</p>
+    <p><b>Plate</b> is the usable tread arc length at the walkline: going + 1.25" (½" past the nose, ¾" past the heel). This is what you actually step on — the tread extends slightly beyond each nosing so the tread material doesn't end right at the nosing line. The color badge shows whether the plate is ≥ 7.5" (green / plenty), 6.75–7.49" (yellow / IRC spiral walkline minimum is 6¾"), or failing (red).</p>
 </div>
 
 <script>
 const LANDING_SPAN = 90; // square landing, degrees
 const IRC_MIN_HR = 78;
-const IRC_RISE_MIN = 7;        // uniform rise band used by this checker
+const IRC_RISE_MIN = 7.67;     // checker min rise (N=19 / 7.27" packs fail code)
 const IRC_RISE_MAX = 9.5;      // IRC spiral max riser (R311.7.9 / R311.7.5.1)
 const WL_OFFSET = 12;          // IRC: 12" from inner rail (pole edge)
 const WL_OVERHANG = 1.25;      // Legal maximum: ½" past nose + ¾" past heel
 const WL_GREEN = 7.5;          // plate depth ≥ 7.5"
-const WL_YELLOW = 6.75;        // plate depth 6.75–7.4"
+const WL_YELLOW = 6.75;        // plate depth 6.75–7.5"
+const WL_GOING_MIN = 6.00;     // nosing-to-nosing at walkline
 
-/** Integer N such that FLOOR_H/N is in [7, 9.5]. Last of the N risers is onto the platform.
- *  Exclude N values that produce rise ≤ 7.27" since all such configs violate code. */
+/** Integer N such that FLOOR_H/N is in [7.67, 9.5]. Last of the N risers is onto the platform. */
 function legalRiseCountRange(floorH) {
     const nMin = Math.max(1, Math.ceil(floorH / IRC_RISE_MAX - 1e-12));
     const nMax = Math.max(nMin, Math.floor(floorH / IRC_RISE_MIN + 1e-12));
-    // Exclude the maximum N if it produces rise ≤ 7.27 (all such configs violate code)
-    const maxSafeN = Math.floor(floorH / 7.27);
-    if (maxSafeN < nMax) {
-        return { nMin, nMax: maxSafeN };
-    }
     return { nMin, nMax };
 }
 
@@ -211,24 +209,11 @@ function syncRiseSlider(floorH) {
     const hint = document.getElementById('riseRangeHint');
     hint.textContent = 'Left = min rise (' + (floorH / nMax).toFixed(2) +
         '", N=' + nMax + ') · right = max rise (' + (floorH / nMin).toFixed(2) +
-        '", N=' + nMin + '). Uniform 7–9.5″, last rise onto the platform.';
+        '", N=' + nMin + '). Uniform 7.67–9.5″, last rise onto the platform.';
     return { nRises: n, rise };
 }
 
-let climbCCW = true; // true = CCW ascent as viewed from above
-
-function norm360(deg) {
-    let x = deg % 360;
-    if (x < 0) x += 360;
-    return x;
-}
-
-/** True if plan angle `deg` lies in [start, start+span) wrapping 360°. Start edge included, end excluded (shared nosing = 0 area). */
-function inSector(deg, start, span) {
-    let d = (deg - start) % 360;
-    if (d < 0) d += 360;
-    return d >= -1e-12 && d < span - 1e-12;
-}
+let climbCCW = false; // false = CW ascent as viewed from above (default)
 
 /**
  * Positive-measure overlap of pie i going ((i−1)·θ, i·θ] with the 90° landing
@@ -306,21 +291,17 @@ function stepColor(headroom) {
     return '#3498db';
 }
 
-/** Plate depth at the walkline (going + 1"). Green ≥7.5", yellow 6.75–7.5", red <6.75".
- *  Also checks IRC minimum going (≥6.00" at nosing); red if either going or plate fails. */
+/** Walkline color: red if going < 6.00" or plate < 6.75"; green if plate ≥ 7.5"; else yellow. */
 function walklineColor(Lphys, Lgoing) {
-    // IRC minimums: going ≥ 6.00", plate ≥ 6.75"
-    if (Lgoing < 6.00 || Lphys < 6.75) return '#e74c3c';  // Red if either fails
-    if (Lphys >= WL_GREEN) return '#2ecc71';               // Green ≥ 7.5"
-    if (Lphys >= WL_YELLOW) return '#f1c40f';              // Yellow 6.75–7.5"
-    return '#e74c3c';                                      // Red if plate < 6.75"
+    if (Lgoing < WL_GOING_MIN || Lphys < WL_YELLOW) return '#e74c3c';
+    if (Lphys >= WL_GREEN) return '#2ecc71';
+    return '#f1c40f';
 }
 
 function walklineBadgeClass(Lphys, Lgoing) {
-    if (Lgoing < 6.00 || Lphys < 6.75) return 'wl-badge wl-red';
+    if (Lgoing < WL_GOING_MIN || Lphys < WL_YELLOW) return 'wl-badge wl-red';
     if (Lphys >= WL_GREEN) return 'wl-badge wl-green';
-    if (Lphys >= WL_YELLOW) return 'wl-badge wl-yellow';
-    return 'wl-badge wl-red';
+    return 'wl-badge wl-yellow';
 }
 
 /** Plan degrees (0 = step-1 heel, increasing in climb direction) → canvas radians.
@@ -432,11 +413,15 @@ function calc() {
             ? '<span class="warn">⚠ MINIMUM NOSE HEADROOM TIGHT (<78" IRC)</span>'
             : '<span class="ok">✓ Minimum nose headroom adequate (≥78")</span>');
 
-    const wlStatus = Lphys >= WL_GREEN
-        ? '<span class="ok">✓ Walkline plate ≥ 7.5"</span>'
-        : (Lphys >= WL_YELLOW
-            ? '<span class="warn">Walkline plate 6.75–7.49"</span>'
-            : '<span class="warn">⚠ Walkline plate < 6.74"</span>');
+    const goingFail = Lgoing < WL_GOING_MIN;
+    const plateFail = Lphys < WL_YELLOW;
+    const wlStatus = goingFail
+        ? '<span class="warn">⚠ Walkline going < 6.00"</span>'
+        : (plateFail
+            ? '<span class="warn">⚠ Walkline plate < 6.75"</span>'
+            : (Lphys >= WL_GREEN
+                ? '<span class="ok">✓ Walkline plate ≥ 7.5"</span>'
+                : '<span class="warn">Walkline plate 6.75–7.49"</span>'));
 
     document.getElementById('summaryBox').innerHTML =
         '<p>Steps per 90°: <span class="highlight">' + stepsPer90 +
@@ -469,31 +454,29 @@ function calc() {
     drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, SPIRAL_DIA, steps, platUnderside, platHeight, nPies, FLOOR_H, Lphys, Lgoing, ORIENT);
 }
 
-function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, SPIRAL_DIA, steps, platUnderside, platHeight, nPies, FLOOR_H, Lphys, Lgoing, ORIENT) {
+function sizeCanvas() {
     const canvas = document.getElementById('vizCanvas');
     const ctx = canvas.getContext('2d');
-
-    // Responsive canvas: fill parent width, fixed aspect ratio ~2:1
-    // Subtract 48px so the right-side HR labels extend beyond the canvas edge (matching fixed-width behavior)
-    const container = canvas.parentElement;
-    const desiredW = Math.max(container.clientWidth - 48, 1); // -48 for right-side label overflow (was -90 with margin=30, now -48 with margin=85)
+    // Fill parent width, 2:1 aspect. -48px leaves room for right-side HR labels.
+    const desiredW = Math.max(canvas.parentElement.clientWidth - 48, 1);
     const desiredH = Math.round(desiredW * 0.5);
-    // Scale device pixel ratio for retina
     const dpr = window.devicePixelRatio || 1;
     canvas.width = Math.round(desiredW * dpr);
     canvas.height = Math.round(desiredH * dpr);
     canvas.style.width = desiredW + 'px';
     canvas.style.height = desiredH + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { canvas, ctx, W: desiredW, H: desiredH };
+}
 
-    const W = desiredW;
-    const H = desiredH;
+function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, SPIRAL_DIA, steps, platUnderside, platHeight, nPies, FLOOR_H, Lphys, Lgoing, ORIENT) {
+    const { ctx, W, H } = sizeCanvas();
 
     ctx.fillStyle = '#111';
     ctx.fillRect(0, 0, W, H);
 
     const planW = W * 0.48;
-    const margin = 85;		// Need 85 so HR: xx.x" is not under right side of frame
+    const margin = 85; // room for HR: xx.x" past the right frame
     const titleH = 24;
 
     ctx.fillStyle = '#5dade2';
@@ -727,13 +710,13 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, SPIRAL_DI
             ctx.lineWidth = 1;
             ctx.setLineDash([2, 2]);
             ctx.beginPath();
-            ctx.moveTo(elevRight + 45, hrTop);	// +45 so height xx.xx" is not overwritten
-            ctx.lineTo(elevRight + 45, y);	// +45 so height xx.xx" is not overwritten
+            ctx.moveTo(elevRight + 45, hrTop); // +45 so height xx.xx" is not overwritten
+            ctx.lineTo(elevRight + 45, y);
             ctx.stroke();
             ctx.setLineDash([]);
             ctx.fillStyle = '#f0c674';
             ctx.font = '9px monospace';
-            ctx.fillText('HR:' + stepData.headroom.toFixed(1) + '"', elevRight + 49, hrY);	// +49 so height xx.xx" is not overwritten
+            ctx.fillText('HR:' + stepData.headroom.toFixed(1) + '"', elevRight + 49, hrY);
         }
     }
 
@@ -810,20 +793,7 @@ document.getElementById('dirCCW').addEventListener('click', function () {
     calc();
 });
 
-window.addEventListener('resize', function() {
-    const canvas = document.getElementById('vizCanvas');
-    const container = canvas.parentElement;
-    const desiredW = Math.max(container.clientWidth - 48, 1); // matches line 465
-    const desiredH = Math.round(desiredW * 0.5);
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = Math.round(desiredW * dpr);
-    canvas.height = Math.round(desiredH * dpr);
-    canvas.style.width = desiredW + 'px';
-    canvas.style.height = desiredH + 'px';
-    const ctx = canvas.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    calc();
-});
+window.addEventListener('resize', calc);
 
 calc();
 </script>

@@ -1,0 +1,12 @@
+#!/bin/sh
+# Stamp the HTML build number from git commit count, then re-stage if needed.
+# Enable with: git config core.hooksPath hooks
+set -e
+root="$(git rev-parse --show-toplevel)"
+html="SpiralStairDesigner.html"
+
+# Only stamp when this commit touches the designer page (or the stamper).
+if git diff --cached --name-only | grep -qE '^(SpiralStairDesigner\.html|scripts/stamp-version)$'; then
+    "$root/scripts/stamp-version"
+    git add "$root/$html"
+fi
