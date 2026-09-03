@@ -3,35 +3,37 @@ Specifications (authoritative — all later numbers must match these):
 2. 72" spiral diameter
 3. 4" center pole
 4. Equal rise on EVERY riser, pie-to-pie AND last pie to landing.
-   N = 19 risers floor-to-floor (including the last rise onto the platform).
-   RISE = 138.07 / 19 ≈ 7.266842 in (label 7.27").
-   nPies = N − 1 = 18 pies + 1 square landing.
-   Do NOT pick a free 7.00" rise and dump leftover 5.07" onto the landing.
-5. 24.5 degree step angle radiating out from the center pole
+   N = 18 risers floor-to-floor (including the last rise onto the platform).
+   RISE = 138.07 / 18 ≈ 7.670556 in (label 7.67").
+   nPies = N − 1 = 17 pies + 1 square landing.
+   Do NOT pick a free 7.00" rise and dump leftover onto the landing.
+   Do NOT use the previous pack N = 19 / 18 pies / h ≈ 7.266842.
+5. 24.6 degree step angle radiating out from the center pole
 6. 3" tread thickness & soffit to surface of platform to step on
-7. Counter Clockwise ascent (Clockwise descent)
+7. Clockwise ascent (Counter-clockwise descent)
 
 Derived from those seven:
  - TOTAL_RISE (finished floor to finished floor) = 138.07 in
  - OUTER_DIAM = 72 in, R_outer = 36 in
  - CENTER_POLE_DIAM = 4 in, pole radius = 2 in
- - NUM_RISES = 19 (floor → pie 1 → … → pie 18 → landing). All 19 equal.
- - RISE_PER_TREAD h = TOTAL_RISE / NUM_RISES = 138.07/19 ≈ 7.266842 in (label 7.27").
-   Use the exact quotient in code, not 7.00, not 7.27 as a truncated construction value
-   (19 × 7.27 = 138.13, which is not FTF).
- - NUM_REGULAR_TREADS = 18 pie treads (indices 0–17). Landing is NOT a 19th pie.
- - Last pie (18) walking Z = 18 × h ≈ 130.803158 in
+ - NUM_RISES = 18 (floor → pie 1 → … → pie 17 → landing). All 18 equal.
+ - RISE_PER_TREAD h = TOTAL_RISE / NUM_RISES = 138.07/18 ≈ 7.670556 in (label 7.67").
+   Use the exact quotient in code, not 7.00, not 7.67 as a truncated construction value
+   (18 × 7.67 = 138.06, which is not FTF).
+ - NUM_REGULAR_TREADS = 17 pie treads (indices 0–16). Landing is NOT an 18th pie.
+ - Last pie (17) walking Z = 17 × h ≈ 130.399444 in
  - Square landing walking Z = TOTAL_RISE = 138.07 in (upper floor)
- - Last riser (pie 18 → landing) = h ≈ 7.266842 in  (EQUAL to every other riser)
- - WRONG: 19 pies. WRONG: LAST_PIE_Z = 133.00. WRONG: LAST_RISER = 5.07.
+ - Last riser (pie 17 → landing) = h ≈ 7.670556 in  (EQUAL to every other riser)
+ - WRONG: 18 pies / N = 19. WRONG: LAST_PIE_Z = 133.00. WRONG: LAST_RISER = 5.07.
    WRONG: nPies = floor((FTF − ε) / 7.0) packing leftover onto the platform.
- - θ = 24.5° exactly (nosing-to-nosing going angle). TREADS_PER_REV = 360/24.5 ≈ 14.69388 (never 12, never 24.6)
+   WRONG: N = 19, 18 pies, h = 138.07/19 ≈ 7.266842 (previous pack).
+ - θ = 24.6° exactly (nosing-to-nosing going angle). TREADS_PER_REV = 360/24.6 ≈ 14.63415 (never 12, never 24.5)
  - TREAD_THICKNESS = 3.0 in (soffit to walking surface). Pie-tread extrusion = 3.0 in. Platform (square landing) thickness = 3.0 in. Do not use 1 in + ½ in lip = 1.5 in. Do not use a 1 in landing plate.
  - Pole extends 36 in after the uppermost walking surface (the landing). Pole top Z = 138.07 + 36 = 174.07 in
- - Platform rail Z = 138.07 + 36 = 174.07 in. Helix start Z = 36, helix rise = LANDING_Z = 138.07, helix end Z at a_lead_18 = 174.07
- - LANDING_EXTRA_CCW = 90° − 24.5° = 65.5° (not 65.4°, not 60°, not extra-CW)
+ - Platform rail Z = 138.07 + 36 = 174.07 in. Helix start Z = 36, helix rise = LANDING_Z = 138.07, helix end Z at a_lead_17 = 174.07
+ - LANDING_EXTRA_CW = 90° − 24.6° = 65.4° (not 65.5°, not 60°, not extra-CCW)
  - Angular ½ in nose + ½ in heel at r = 36 in still applies in PLAN (overlap_each = degrees(0.5/36) ≈ 0.795775°). That is not extra vertical thickness.
- - Ascent is COUNTER-CLOCKWISE viewed from above (right-handed helix). Descent is clockwise. Angles increase from +X. Do not use clockwise-negative angles.
+ - Ascent is CLOCKWISE viewed from above (left-handed helix). Descent is counter-clockwise. Angles decrease from +X (negative). Do not use CCW-positive angles.
 
 Role: You are a FreeCAD Python scripting expert. Your output is a single self-contained .py file that, when run as a FreeCAD macro, produces the exact geometry described below. Every dimension is concrete; use Part workbench primitives and boolean operations. Do not use the Arch or BIM workbenches unless they are the only way to achieve a requirement; prefer Part primitives.
 
@@ -39,134 +41,127 @@ Dimensions and constraints (all in inches unless noted, welded steel constructio
  - Total rise (finished floor to finished floor): 138.07 inches
  - Overall staircase diameter: 6 feet (72 inches). Outer walking radius R_outer = 36 in.
  - Center pole: solid cylinder, 4 inches diameter, full height, extends 36 inches after the uppermost walking surface (the landing). Pole top Z = 138.07 + 36 = 174.07 in.
- - Treads: 18 regular pie treads plus 1 square landing (the last step onto the upper floor).
- - Riser height h = 138.07/19 ≈ 7.266842 in on EVERY riser, including pie 18 → landing.
- - Step angle θ = 24.5° exactly (nosing-to-nosing going angle).
- - Ascent direction: counter-clockwise (when viewed from above). Clockwise descent.
+ - Treads: 17 regular pie treads plus 1 square landing (the last step onto the upper floor).
+ - Riser height h = 138.07/18 ≈ 7.670556 in on EVERY riser, including pie 17 → landing.
+ - Step angle θ = 24.6° exactly (nosing-to-nosing going angle).
+ - Ascent direction: clockwise (when viewed from above). Counter-clockwise descent.
 
 degree     Helix stacking (one full turn, no landing in the way):
-     Gross (360/24.5)×h ≈ 106.78 in. PASS ≫ 78 in; does not govern under the landing.
+     Gross (360/24.6)×h ≈ 112.25 in. PASS ≫ 78 in; does not govern under the landing.
 
      Square landing occupies 90° in plan (pole at one corner; the two adjacent outer corners
-     lie on the 36 in circle). 90/θ ≈ 3.67, so about four pie treads sit under that 90° sector,
-     plus a sliver of a fifth at each end. Those treads do NOT get ~107 in of stacking clearance;
+     lie on the 36 in circle). 90/θ ≈ 3.66, so about four pie treads sit under that 90° sector,
+     plus a sliver of a fifth at each end. Those treads do NOT get ~112 in of stacking clearance;
      they get landing-soffit clearance instead.
 
      Landing plate is 3 in thick (same soffit-to-surface as the pie treads; spec 6)
      ⇒ soffit Z = 138.07 − 3.00 = 135.07.
      Headroom_i = 135.07 − Z_walk_i.
-     First-wrap shadow of the landing (going-based, counter-clockwise = positive from +X):
-         a_lead_18_going = +18 × 24.5° = +441.0°
-         a_lead_land_going = a_lead_18_going + 90° = +531.0°
-         first wrap: [+81.0°, +171.0°]
-     Per-step table (regular treads 1–18). IMPACT = plan overlap with that 90° shadow.
-     Z_walk_i = i × (138.07/19). Displayed to 4 decimals:
+     First-wrap shadow of the landing (going-based, clockwise = negative from +X):
+         a_lead_17_going = −17 × 24.6° = −418.2°
+         a_lead_land_going = a_lead_17_going − 90° = −508.2°
+         first wrap: [−58.2°, −148.2°]
+     Per-step table (regular treads 1–17). IMPACT = plan overlap with that 90° shadow.
+     Z_walk_i = i × (138.07/18). Displayed to 4 decimals:
 
          step  idx    Z_walk    angles (deg)         HR to landing soffit   IMPACT?
-          1     0      7.2668   [   0.0,  +24.5]          127.8032
-          2     1     14.5337   [ +24.5,  +49.0]          120.5363
-          3     2     21.8005   [ +49.0,  +73.5]          113.2695
-          4     3     29.0674   [ +73.5,  +98.0]          106.0026             YES (partial 17.0°)
-          5     4     36.3342   [ +98.0, +122.5]           98.7358             YES
-          6     5     43.6011   [+122.5, +147.0]           91.4689             YES
-          7     6     50.8679   [+147.0, +171.5]           84.2021             YES (24.0° of wrap)
-          8     7     58.1347   [+171.5, +196.0]           76.9353             no (starts after wrap)
-          9     8     65.4016   [+196.0, +220.5]           69.6684             no
-         10     9     72.6684   [+220.5, +245.0]           62.4016             no
-         11    10     79.9353   [+245.0, +269.5]           55.1347             no
-         12    11     87.2021   [+269.5, +294.0]           47.8679             no
-         13    12     94.4689   [+294.0, +318.5]           40.6011             no
-         14    13    101.7358   [+318.5, +343.0]           33.3342             no
-         15    14    109.0026   [+343.0, +367.5]           26.0674             no
-         16    15    116.2695   [+367.5, +392.0]           18.8005             no
-         17    16    123.5363   [+392.0, +416.5]           11.5337             no
-         18    17    130.8032   [+416.5, +441.0]            4.2668             no (approach, not under)
+          1     0      7.6706   [   0.0,  −24.6]          127.3994
+          2     1     15.3411   [ −24.6,  −49.2]          119.7289
+          3     2     23.0117   [ −49.2,  −73.8]          112.0583             YES (partial 15.6°)
+          4     3     30.6822   [ −73.8,  −98.4]          104.3878             YES
+          5     4     38.3528   [ −98.4, −123.0]           96.7172             YES
+          6     5     46.0233   [−123.0, −147.6]           89.0467             YES
+          7     6     53.6939   [−147.6, −172.2]           81.3761             YES (0.6° of wrap)
+          8     7     61.3644   [−172.2, −196.8]           73.7056             no (starts after wrap)
+          9     8     69.0350   [−196.8, −221.4]           66.0350             no
+         10     9     76.7056   [−221.4, −246.0]           58.3644             no
+         11    10     84.3761   [−246.0, −270.6]           50.6939             no
+         12    11     92.0467   [−270.6, −295.2]           43.0233             no
+         13    12     99.7172   [−295.2, −319.8]           35.3528             no
+         14    13    107.3878   [−319.8, −344.4]           27.6822             no
+         15    14    115.0583   [−344.4, −369.0]           20.0117             no
+         16    15    122.7289   [−369.0, −393.6]           12.3411             no
+         17    16    130.3994   [−393.6, −418.2]            4.6706             no (approach, not under)
 
-     Impacted under-landing set is steps 4–7 (step 7 at 84.20 in ≥ 78 in PASS).
-     Step 7 going sector [+147.0, +171.5] vs first-wrap [+81.0, +171.0] overlaps 24.0°.
-     Step 8 going [+171.5, +196.0] does not overlap the wrap.
-     Steps 8–18 are not under the plate; 76.94 in and below on that column is NOT a headroom failure.
-     IRC walkline at r = 14 in: L_going = 14 × 24.5 × π/180 ≈ 5.986 in (FAIL 6.00 by 0.014 in).
-     Geometry still uses θ = 24.5° because the numbered spec is authoritative.
+     Impacted under-landing set is steps 3–7 (step 7 at 81.38 in ≥ 78 in PASS).
+     Step 7 going sector [−147.6, −172.2] vs first-wrap [−58.2, −148.2] overlaps 0.6°.
+     Step 8 going [−172.2, −196.8] does not overlap the wrap.
+     Steps 8–17 are not under the plate; 73.71 in and below on that column is NOT a headroom failure.
+     IRC walkline at r = 14 in: L_going = 14 × 24.6 × π/180 ≈ 6.011 in (PASS 6.00 IRC R311.7.9).
+     Geometry uses θ = 24.6° because the numbered spec is authoritative.
 
- - Tread geometry (regular treads 0–17):
+ - Tread geometry (regular treads 0–16):
    * Each tread is a planar segment of an annular ring.
-   * Outside arc length (measured at the 6 ft diameter outer edge), θ = 24.5° not 12 treads/rev:
-         going  = π × 72 × (24.5/360) ≈ 15.394 in
-         plate  = going + 1 in ≈ 16.394 in
+   * Outside arc length (measured at the 6 ft diameter outer edge), θ = 24.6° not 12 treads/rev:
+         going  = π × 72 × (24.6/360) ≈ 15.457 in
+         plate  = going + 1 in ≈ 16.457 in
          (The +1 inch accounts for the ½ inch overlap on each side, ½ in nose + ½ in heel,
           specified at r = 36 in.)
      Do NOT use (π × 6 ft × 12 in/ft)/12 + 1 ≈ 19.85 in — that formula assumed 12 treads/rev (30°).
-     Do NOT use 24.6° numbers (going ≈ 15.457 / plate ≈ 16.457).
+     Do NOT use 24.5° numbers (going ≈ 15.394 / plate ≈ 16.394).
    * Angular plate span at r = 36 in:
          overlap_each = degrees(0.5 / 36) ≈ 0.795775°
-         TREAD_ANGULAR_SPAN = 24.5 + 2 × overlap_each ≈ 26.09155°
+         TREAD_ANGULAR_SPAN = 24.6 + 2 × overlap_each ≈ 26.19155°
    * Inside arc length (at the center pole): match the 4 in diameter pole surface; the tread's inner edge is at the pole radius of 2 inches from the spiral center.
    * Tread thickness: 3 inches soffit to walking surface. Extrude 3.0 in. Walking-surface TOP at Z_walk; soffit at Z_walk − 3.0. Do not extrude 1.5 in.
  - Tread overlap:
    Each tread overlaps the tread directly below it by ½ inch along the outer edge in PLAN, and is itself overlapped by the tread above it by the same ½ inch. That is TREAD_ANGULAR_SPAN, not extra vertical thickness. Vertical thickness stays 3.0 in.
 
-- LANDING (square platform after pie 18 — NOT a pie wedge, NOT “the 19th pie”):
+- LANDING (square platform after pie 17 — NOT a pie wedge, NOT “the 18th pie”):
   * Shape: a 36 × 36 inch square steel plate, 3 inches thick (spec 6: same soffit-to-surface as pies). It is NOT an annular sector. It is NOT a 1 in plate.
-  * Walking-surface Z: TOTAL_RISE = 138.07 inches (designer platform / upper floor). Last pie is at 18×h ≈ 130.803158. The 18th-to-landing riser is h (equal). Do NOT set LANDING_Z = 18 × 7.0 = 126 or 19 × 7.0 = 133.00.
+  * Walking-surface Z: TOTAL_RISE = 138.07 inches (designer platform / upper floor). Last pie is at 17×h ≈ 130.399444. The 17th-to-landing riser is h (equal). Do NOT set LANDING_Z = 17 × 7.0 = 119 or 18 × 7.0 = 126.00 or 19 × 7.0 = 133.00.
   * LEADING EDGE (critical — do NOT make this edge tangent to the 72" circle):
     The landing's leading (front/nose) edge is a RADIAL line (from the spiral center out to the 36" outer radius), not a tangent.
-    Square starts at the last pie NOSE (pie 18) and spans 90° in the climb direction (same as SpiralStairDesigner.html).
-    LANDING_EXTRA_CCW = 90° − 24.5° = 65.5° extra past that nose.
-    Do NOT add a phantom extra pie (do NOT start the square at pie-19 nose — there is no 19th pie).
-    Formulas (counter-clockwise = positive angles from +X):
-      18th tread is index 17:
-        a_start_18 = +17 * ANGLE_PER_TREAD
-        a_lead_18  = a_start_18 + TREAD_ANGULAR_SPAN     # 18th nose (leading edge of last pie)
-      LANDING_EXTRA_CCW = 65.5° = (90 − 24.5)° = 1.143191 rad
+    Square starts at the last pie NOSE (pie 17) and spans 90° in the climb direction (clockwise).
+    LANDING_EXTRA_CW = 90° − 24.6° = 65.4° extra past that nose.
+    Do NOT add a phantom extra pie (do NOT start the square at pie-18 nose — there is no 18th pie).
+    Formulas (clockwise = negative angles from +X):
+      17th tread is index 16:
+        a_start_17 = −16 * ANGLE_PER_TREAD
+        a_lead_17  = a_start_17 − TREAD_ANGULAR_SPAN     # 17th nose (leading edge of last pie)
+      LANDING_EXTRA_CW = 65.4° = (90 − 24.6)° = 1.141397 rad
       Landing:
-        a_lead_land  = a_lead_18 + 90°
-        # left-side radial of the square lands on the 18th nose (a_lead_18)
-        a_left_land = a_lead_land - 90°   # = a_lead_18
-    WRONG (do not use): NUM_REGULAR_TREADS = 19
+        a_lead_land  = a_lead_17 − 90°
+        # right-side radial of the square lands on the 17th nose (a_lead_17)
+        a_right_land = a_lead_land + 90°   # = a_lead_17
+    WRONG (do not use): NUM_REGULAR_TREADS = 18 or 19
     WRONG: LAST_PIE_Z = 133.00 with LAST_RISER = 5.07
-    WRONG: a_lead_land = a_lead_19 + 90°  (there is no 19th pie)
-    Also WRONG: LANDING_EXTRA_CCW = 60° (that was for θ = 30°) or 65.4° (that was for θ = 24.6°).
-    Also WRONG: clockwise-negative angles, LANDING_EXTRA_CW, or a_lead_land = a_lead_18 − 90°.
-  * POLE = LEFT-SIDE ATTACHMENT (critical):
-    Counter-clockwise ascent ⇒ pole is on the walker's left.
-    The landing's left-front corner sits on the spiral center (the pole axis). Rotate the square about that corner.
+    WRONG: a_lead_land = a_lead_18 − 90°  (there is no 18th pie)
+    Also WRONG: LANDING_EXTRA_CW = 60° (that was for θ = 30°) or 65.5° (that was for θ = 24.5°).
+    Also WRONG: CCW-positive angles, LANDING_EXTRA_CCW, or a_lead_land = a_lead_17 + 90°.
+  * POLE = RIGHT-SIDE ATTACHMENT (critical):
+    Clockwise ascent ⇒ pole is on the walker's right.
+    The landing's right-front corner sits on the spiral center (the pole axis). Rotate the square about that corner.
     The leading edge runs from that pole corner radially OUT along angle a_lead_land for 36 inches,
     ending at the outer circle: (36 * cos(a_lead_land), 36 * sin(a_lead_land)).
-    The left side of the square runs from the pole 36 inches along a_left_land = a_lead_18
-    (the 18th nose radial). Its outer end is the 18th last-baluster point — that is the shared post in PLAN.
-    Because the landing walking surface is one equal rise h above the 18th tread, that shared post originates
-    on the 18th tread (Z ≈ 130.803158) and passes the landing's left-back corner (Z = 138.07) on its way
+    The right side of the square runs from the pole 36 inches along a_right_land = a_lead_17
+    (the 17th nose radial). Its outer end is the 17th last-baluster point — that is the shared post in PLAN.
+    Because the landing walking surface is one equal rise h above the 17th tread, that shared post originates
+    on the 17th tread (Z ≈ 130.399444) and passes the landing's right-back corner (Z = 138.07) on its way
     to the rail. Do not create a second post there.
-  * FreeCAD placement (do not use the old tangent/+90°/inward-offset recipe; do not use the clockwise box):
+  * FreeCAD placement (do not use the old tangent/+90°/inward-offset recipe; do not use the CCW Y-mirror box):
     - box = Part.makeBox(36", 36", 3") at the origin. Thickness is 3 in, not 1 in.
-      Local (0,0) = left-front = pole.
-      Local (36,0) = right-front = outer end of the leading edge.
-      Local (0,36) = left-back = outer end of the 18th-nose radial (shared baluster in plan).
-      Local (36,36) = right-back (outside the 72" circle; that is correct for a square).
-    - Because standard Z-rotation sends local +Y to a_lead_land+90°, but a_lead_18 = a_lead_land − 90°,
-      MIRROR local Y (use Y' = −Y) then rotate about Z by math.degrees(a_lead_land).
-      After this, local +X maps onto the leading-edge radial at a_lead_land, and mirrored +Y
-      (physical −Y before rotate) maps onto a_lead_18.
-      Equivalently: rotate by a_lead_land, then the 18th-nose outer point is at local (0, −36)
-      in un-mirrored box coords — implement the mirror so that local (0,36) in the named
-      box-local system above lands on a_lead_18.
+      Local (0,0) = right-front = pole.
+      Local (36,0) = left-front = outer end of the leading edge.
+      Local (0,36) = right-back = outer end of the 17th-nose radial (shared baluster in plan).
+      Local (36,36) = left-back (outside the 72" circle; that is correct for a square).
+    - Standard Z-rotation sends local +X to a_lead_land and local +Y to a_lead_land+90° = a_lead_17.
+      Do NOT Y-mirror (that was the CCW recipe). Rotate about Z by math.degrees(a_lead_land) only.
       Implementation that matches the named box-local system:
-        gx =  lx * cos(a_lead_land) + ly * sin(a_lead_land)
-        gy =  lx * sin(a_lead_land) − ly * cos(a_lead_land)
-      (Y-mirror then CCW rotate. No extra +90°. No XY translation.)
+        gx =  lx * cos(a_lead_land) − ly * sin(a_lead_land)
+        gy =  lx * sin(a_lead_land) + ly * cos(a_lead_land)
+      (standard rotate, no Y-mirror. No extra ±90°. No XY translation.)
     - Translate in Z so the TOP face is at z_walk = 138.07" (translate by 138.07 − 3.00). No XY translation — the pole corner stays at the origin.
     - VERIFY:
         local (0,0) → (0, 0, 138.07)
         local (36,0) → (36*cos(a_lead_land), 36*sin(a_lead_land), 138.07)
-        local (0,36) → (36*cos(a_lead_18), 36*sin(a_lead_18), 138.07)
-          which is the 18th tread's outer nose in PLAN, one equal rise h above that tread's walking surface.
-    - The 4" pole passes through the left-front corner. Cut the pole cylinder out of the landing
+        local (0,36) → (36*cos(a_lead_17), 36*sin(a_lead_17), 138.07)
+          which is the 17th tread's outer nose in PLAN, one equal rise h above that tread's walking surface.
+    - The 4" pole passes through the right-front corner. Cut the pole cylinder out of the landing
       (or leave a welded overlap); inner treads already meet the pole at r = 2".
   * Balusters on the landing (STRAIGHT rows on the FRONT and BACK sides of the square — NOT left/right, NOT on an arc):
-    - WRONG (previous clockwise): posts/rails on the left edge (local X=36) and right edge (local X=0)
-      as if pole were on the walker's right.
-    - CORRECT: FRONT = leading edge (local Y=0) and BACK (local Y=36). Pole is LEFT.
+    - WRONG (CCW leftover): treat pole as LEFT; Y-mirror then rotate.
+    - CORRECT: FRONT = leading edge (local Y=0) and BACK (local Y=36). Pole is RIGHT.
     - Do NOT place landing posts on a circular arc. Do NOT continue the helical 5-slot pattern onto the landing.
     - Cover the FULL 36" side at 4 inches on center (not a 4-post cluster at the outer end).
       36 / 4 = 9 spaces ⇒ 10 stations including both endpoints:
@@ -174,7 +169,7 @@ degree     Helix stacking (one full turn, no landing in the way):
       That is the previous 5 (shared inner + 4 outer) plus 5 more to fill the gap.
     - BACK  (local Y = 36):  (36,36), (32,36), (28,36), (24,36), (20,36), (16,36), (12,36), (8,36), (4,36), (0,36)
     - FRONT (local Y =  0):  (36, 0), (32, 0), (28, 0), (24, 0), (20, 0), (16, 0), (12, 0), (8, 0), (4, 0), (0, 0)
-    - BACK k=9 at local (0, 36) IS the 18th tread's last baluster (shared helix junction in plan). Skip creating it.
+    - BACK k=9 at local (0, 36) IS the 17th tread's last baluster (shared helix junction in plan). Skip creating it.
     - FRONT k=9 at local (0, 0) IS the pole axis. Do not put a post on the pole. Skip creating it.
     - Create the other 18 posts (9 front + 9 back) on the landing surface (Z = 138.07).
     - Landing posts are LEVEL. Height = HANDRAIL_HEIGHT - HANDRAIL_RADIUS = 36 - 0.75 = 35.25 in
@@ -184,49 +179,49 @@ degree     Helix stacking (one full turn, no landing in the way):
       Box-local from (CENTER_POLE_RADIUS, 0) = (2, 0) to (36, 0). Do not run the tube through the pole.
       Centreline Z = 138.07 + 36 = 174.07 in.
     - BACK rail: 1½ in tube, straight, horizontal, along the back edge (Y=36), parallel to the front rail.
-      Box-local from (0, 36) (shared 18th post / helix end in plan) to (36, 36). Same Z = 174.07 in.
+      Box-local from (0, 36) (shared 17th post / helix end in plan) to (36, 36). Same Z = 174.07 in.
     - These two rails are parallel to each other and to the front/back sides of the 36 in square.
       They do NOT sit on the left or right (radial) edges. They do NOT curve. They do NOT follow the stair helix.
 
- - Balusters (regular treads 0–17 only):
+ - Balusters (regular treads 0–16 only):
    * 5 round balusters per tread, each ½ inch diameter
    * The last baluster of each tread is shared with the first baluster of the tread above
    * Baluster height on the SPIRAL: each baluster extends from the top of its tread to the underside of the helical handrail. Compute individually: height = handrail_z(angle) - tread_z - HANDRAIL_RADIUS. NEVER hard-code 36 inches on the spiral.
-     The shared 18th-to-landing post (BACK k=9 in plan) stands on the 18th tread (Z ≈ 130.803158) and
+     The shared 17th-to-landing post (BACK k=9 in plan) stands on the 17th tread (Z ≈ 130.399444) and
      meets the platform-rail Z (174.07), so it is taller than the level landing posts by one equal rise h.
    * Spacing: evenly distributed along the outer edge arc of each tread (include the first and last baluster at the tread's outer arc endpoints)
-   * Spiral handrail (treads 0–17): 1½-inch steel tubing, constant-pitch right-handed helix, NOT parallel with the stairs.
-     Counter-clockwise ascent = right-handed helix. Use Part.makeHelix(pitch, height, radius, 0, False)
-     — 4th arg is cone apex degrees (0 = cylinder). 5th arg left_handed=False (default) = CCW ascent.
-     Do NOT pass True as the 5th arg — that is clockwise ascent / left-handed, the previous rotation.
+   * Spiral handrail (treads 0–16): 1½-inch steel tubing, constant-pitch left-handed helix, NOT parallel with the stairs.
+     Clockwise ascent = left-handed helix. Use Part.makeHelix(pitch, height, radius, 0, True)
+     — 4th arg is cone apex degrees (0 = cylinder). 5th arg left_handed=True = clockwise ascent.
+     Do NOT pass False as the 5th arg — that is CCW ascent / right-handed, the previous rotation.
      Do NOT pass True as the 4th arg — that is cone angle, not handedness.
-     The helix STOPS at the 18th tread's last baluster (a_lead_18 / local (0,36) / shared post).
-     It does NOT continue across the landing. Helix end Z at a_lead_18 MUST equal the platform rail Z (174.07 in)
-     so the shared post is the junction of helix and left platform rail.
+     The helix STOPS at the 17th tread's last baluster (a_lead_17 / local (0,36) / shared post).
+     It does NOT continue across the landing. Helix end Z at a_lead_17 MUST equal the platform rail Z (174.07 in)
+     so the shared post is the junction of helix and right platform rail.
      Therefore helix rise = LANDING_Z = 138.07 in (start Z = 36, end Z = 174.07).
    * Material: solid cylinders (Part::Cylinder)
 
 Output format (code organization):
- 1. Document-level comments with units, θ = 24.5°, N_pies = 18, N_rises = 19, h = 138.07/19, CCW ascent, walkline identities (r_wl = 14, L_going ≈ 5.986, L_phys ≈ 6.986), total rotation 441.0° pie / landing nose 90° past 18th CCW, and the full per-step headroom table above
- 2. Constants block (all numeric literals named and commented). ANGLE_PER_TREAD = 24.5°. NUM_REGULAR_TREADS = 18. NUM_RISES = 19. RISE_PER_TREAD = TOTAL_RISE / 19. LANDING_Z = 138.07 (= TOTAL_RISE). LAST_PIE_Z = 18 × h. LAST_RISER = h (equal). LANDING_EXTRA_CCW = 65.5°. TREAD_THICKNESS = 3.0. LANDING_THICKNESS = 3.0. TOTAL_RISE = 138.07. TREADS_PER_REV is 360/24.5, never 12. Ascent CCW (positive angles). Do NOT set NUM_REGULAR_TREADS = 19. Do NOT set LAST_RISER = 5.07. Do NOT set RISE_PER_TREAD = 7.0.
+ 1. Document-level comments with units, θ = 24.6°, N_pies = 17, N_rises = 18, h = 138.07/18, CW ascent, walkline identities (r_wl = 14, L_going ≈ 6.011, L_phys ≈ 7.011), total rotation −418.2° pie / landing nose 90° past 17th CW, and the full per-step headroom table above
+ 2. Constants block (all numeric literals named and commented). ANGLE_PER_TREAD = 24.6°. NUM_REGULAR_TREADS = 17. NUM_RISES = 18. RISE_PER_TREAD = TOTAL_RISE / 18. LANDING_Z = 138.07 (= TOTAL_RISE). LAST_PIE_Z = 17 × h. LAST_RISER = h (equal). LANDING_EXTRA_CW = 65.4°. TREAD_THICKNESS = 3.0. LANDING_THICKNESS = 3.0. TOTAL_RISE = 138.07. TREADS_PER_REV is 360/24.6, never 12. Ascent CW (negative angles). Do NOT set NUM_REGULAR_TREADS = 18 or 19. Do NOT set LAST_RISER = 5.07. Do NOT set RISE_PER_TREAD = 7.0. Do NOT set THETA_DEG = 24.5. Do NOT use CCW-positive angles.
  3. Helper functions (e.g. tread_from_angle, make_baluster)
- 4. Main body: iterate over 18 regular treads + 1 square landing, create geometry, place into the active FreeCAD document
+ 4. Main body: iterate over 17 regular treads + 1 square landing, create geometry, place into the active FreeCAD document
  5. At the end recompute the document (App.ActiveDocument.recompute())
 
 TechDraw drawing (produced by the render runner, not by this macro):
   After the STEP export, create an A3 landscape TechDraw page with:
     - PLAN view (top, Direction = +Z) of the staircase solids
     - ELEVATION view (front, Direction = −Y)
-    - Annotation block listing: overall diameter 72 in, equal rise 138.07/19 ≈ 7.266842 in (label 7.27 in),
-      floor-to-floor 138.07 in, landing Z = 138.07 in (last pie ≈ 130.803 in, last riser = h),
-      θ = 24.5°, ~14.694 treads/rev counter-clockwise,
+    - Annotation block listing: overall diameter 72 in, equal rise 138.07/18 ≈ 7.670556 in (label 7.67 in),
+      floor-to-floor 138.07 in, landing Z = 138.07 in (last pie ≈ 130.399 in, last riser = h),
+      θ = 24.6°, ~14.634 treads/rev clockwise,
       landing 36×36×3 in at Z=138.07 in, platform balusters 4 in on center,
       pole 4 in dia + 36 in above landing (pole top 174.07),
       handrail 1.5 in dia at 36 in above walking (platform rail Z = 174.07),
       pie tread 3 in soffit-to-surface, platform 3 in soffit-to-surface,
-      18 pie treads + square landing, 19 equal risers,
-      outer plate arc ≈ 16.39 in, IRC walkline r = 14 in going ≈ 5.986 in,
-      under-landing headroom steps 4–7 (step 7 = 84.20 in; step 8 not under plate),
+      17 pie treads + square landing, 18 equal risers,
+      outer plate arc ≈ 16.46 in, IRC walkline r = 14 in going ≈ 6.011 in,
+      under-landing headroom steps 3–7 (step 7 = 81.38 in; step 8 not under plate),
       baluster ½ in dia.
   Headless FreeCAD has no GUI, so PDF is not available from `-c`. Export the page
   as DXF via TechDraw.writeDXFPage, also save an .FCStd (open in the GUI → PDF),
