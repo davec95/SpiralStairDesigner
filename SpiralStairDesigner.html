@@ -167,10 +167,16 @@ const WL_OVERHANG = 1.25;      // Legal maximum: ½" past nose + ¾" past heel
 const WL_GREEN = 7.5;          // plate depth ≥ 7.5"
 const WL_YELLOW = 6.75;        // plate depth 6.75–7.4"
 
-/** Integer N such that FLOOR_H/N is in [7, 9.5]. Last of the N risers is onto the platform. */
+/** Integer N such that FLOOR_H/N is in [7, 9.5]. Last of the N risers is onto the platform.
+ *  Exclude N values that produce rise ≤ 7.27" since all such configs violate code. */
 function legalRiseCountRange(floorH) {
     const nMin = Math.max(1, Math.ceil(floorH / IRC_RISE_MAX - 1e-12));
     const nMax = Math.max(nMin, Math.floor(floorH / IRC_RISE_MIN + 1e-12));
+    // Exclude the maximum N if it produces rise ≤ 7.27 (all such configs violate code)
+    const maxSafeN = Math.floor(floorH / 7.27);
+    if (maxSafeN < nMax) {
+        return { nMin, nMax: maxSafeN };
+    }
     return { nMin, nMax };
 }
 
