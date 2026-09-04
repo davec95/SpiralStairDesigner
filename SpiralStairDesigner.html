@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IRC Spiral Stair Checker v1.12.21 — Spiral Stair Headroom Calculator</title>
+<title>IRC Spiral Stair Checker v1.22 — Spiral Stair Headroom Calculator</title>
 <!-- Security: CSP meta tags (client-side mitigation) -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -68,7 +68,7 @@ td.headroom-open { color: #888; font-style: italic; }
 </style>
 </head>
 <body>
-<h1>IRC Spiral Stair Checker v1.12.21</h1>
+<h1>IRC Spiral Stair Checker v1.22</h1>
 <div class="subtitle">Spiral Stair Headroom Calculator — nose-to-soffit at each step</div>
 
 <div class="section-label">Controls</div>
@@ -111,9 +111,14 @@ td.headroom-open { color: #888; font-style: italic; }
         <input type="number" id="spiralDia" value="72" step="1" min="36" max="120">
     </div>
     <div class="control-group">
-        <label for="orient">Orientation offset: <span class="val" id="orientVal">122</span>° (step 1 heel from top)</label>
+        <label for="nosing">Nosing:</label>
+        <span class="sr-only">Nosing overhang in inches, 0.75 to 1.25 in 0.25 inch steps. Default 1.25 inches.</span>
+        <input type="number" id="nosing" value="1.25" step="0.25" min="0.75" max="1.25">
+    </div>
+    <div class="control-group">
+        <label for="orient">Orientation offset: <span class="val" id="orientVal">99</span>° (step 1 heel from top)</label>
         <span class="sr-only">Orientation offset in degrees, range 0 to 359</span>
-        <input type="range" id="orient" min="0" max="359" step="1" value="122">
+        <input type="range" id="orient" min="0" max="359" step="1" value="99">
     </div>
     <div class="control-group">
         <label>Ascent (from above)</label>
@@ -130,6 +135,7 @@ td.headroom-open { color: #888; font-style: italic; }
     &nbsp;|&nbsp; Walkline r = narrow end of tread + 12" = <span id="walkPathVal">14.75</span>"
     &nbsp;|&nbsp; Landing plan span = 90° <span id="landDirLabel">clockwise</span> from last pie nose
     &nbsp;|&nbsp; Walkline depth <span id="wlBadge" class="wl-badge wl-green">—</span>
+    &nbsp;|&nbsp; Walkline radius (calculated as pole radius, pole to tread gap + 12") <span id="wlRadBadge" class="wl-badge wl-green">14.75"</span>
 </div>
 
 <div class="section-label">Visualization</div>
@@ -175,11 +181,14 @@ const IRC_MIN_HR = 78;
 const IRC_RISE_MIN = 7.00;     // checker min rise (user band; IRC spiral max is 9.5")
 const IRC_RISE_MAX = 9.5;      // IRC spiral max riser (R311.7.9 / R311.7.5.1)
 const WL_OFFSET = 12;          // IRC: 12" from inner rail (narrow end of tread)
-const WL_OVERHANG = 1.25;      // Legal maximum: ½" past nose + ¾" past heel
+const WL_OVERHANG = 1.25;      // default / IRC legal max: ½" past nose + ¾" past heel
+const NOSING_MIN = 0.75;
+const NOSING_MAX = 1.25;
 const WL_GREEN = 7.5;          // plate depth ≥ 7.5"
 const WL_YELLOW = 6.75;        // plate depth 6.75–7.5"  (tread depth ≥ 6¾")
 const WL_GOING_MIN = 6.00;     // nosing-to-nosing at walkline
-const WL_RADIUS_MAX = 24.5;    // center of pole to walkline ≤ 24½"
+const WL_RADIUS_MAX = 24.5;    // checklist: center of pole to walkline ≤ 24½"
+const WL_RADIUS_BADGE_MAX = 24; // header badge: green ≤ 24", red if not (no yellow)
 const POLE_GAP_DEFAULT = 0.75;
 const POLE_GAP_MIN = 0;
 const POLE_GAP_MAX = 2;
@@ -317,6 +326,10 @@ function walklineBadgeClass(Lphys, Lgoing) {
     return 'wl-badge wl-yellow';
 }
 
+function walklineRadiusBadgeClass(walkRad) {
+    return walkRad <= WL_RADIUS_BADGE_MAX + 1e-9 ? 'wl-badge wl-green' : 'wl-badge wl-red';
+}
+
 /** Plan degrees (0 = step-1 heel, increasing in climb direction) → canvas radians.
  *  Canvas 0 = right, −90° = top. Offset 0 puts step-1 heel at the top. */
 function planToCanvas(planDeg, ORIENT) {
@@ -335,6 +348,10 @@ function calc() {
     if (POLE_GAP < POLE_GAP_MIN) POLE_GAP = POLE_GAP_MIN;
     if (POLE_GAP > POLE_GAP_MAX) POLE_GAP = POLE_GAP_MAX;
     const SPIRAL_DIA = parseFloat(document.getElementById('spiralDia').value) || 72;
+    let NOSING = parseFloat(document.getElementById('nosing').value);
+    if (!Number.isFinite(NOSING)) NOSING = WL_OVERHANG;
+    if (NOSING < NOSING_MIN) NOSING = NOSING_MIN;
+    if (NOSING > NOSING_MAX) NOSING = NOSING_MAX;
     const ORIENT = ((parseInt(document.getElementById('orient').value, 10) % 360) + 360) % 360;
     const RADIUS = SPIRAL_DIA / 2;
     const POLE_RAD = POST_DIA / 2;
@@ -353,13 +370,16 @@ function calc() {
     const thetaRad = THETA * Math.PI / 180;
     const stepsPerRev = 360 / THETA;
     const Lgoing = WALK_RAD * thetaRad;                                  // nosing-to-nosing at walkline (unrounded for color logic)
-    const Lphys = Lgoing + WL_OVERHANG;                                  // plate: +1.25" legal max
+    const Lphys = Lgoing + NOSING;                                       // plate: going + nosing overhang
     const LgoingOuter = RADIUS * thetaRad;
-    const LphysOuter = LgoingOuter + WL_OVERHANG;
+    const LphysOuter = LgoingOuter + NOSING;
     const wlColor = walklineColor(Lphys, Lgoing);                        // Color uses unrounded values
     const badge = document.getElementById('wlBadge');
     badge.className = walklineBadgeClass(Lphys, Lgoing);
     badge.textContent = Lphys.toFixed(2) + '" plate  (going ' + Lgoing.toFixed(2) + '")';
+    const radBadge = document.getElementById('wlRadBadge');
+    radBadge.className = walklineRadiusBadgeClass(WALK_RAD);
+    radBadge.textContent = WALK_RAD.toFixed(2) + '"';
 
     // N equal risers floor→floor. Last riser is onto the landing, so pie count is N−1.
     const nPies = Math.max(0, nRises - 1);
@@ -455,7 +475,7 @@ function calc() {
         '<p>Walkline r = pole r + gap + 12 = ' + POLE_RAD.toFixed(2) + ' + ' + POLE_GAP.toFixed(2) +
         ' + 12 = <span class="highlight">' + WALK_RAD.toFixed(2) +
         '</span> &nbsp;|&nbsp; Walkline going r·θ = <span class="highlight">' + Lgoing.toFixed(3) +
-        '"</span> &nbsp;|&nbsp; Plate = going + 1.25" = <span class="highlight">' + Lphys.toFixed(3) +
+        '"</span> &nbsp;|&nbsp; Plate = going + ' + NOSING.toFixed(2) + '" = <span class="highlight">' + Lphys.toFixed(3) +
         '"</span></p>' +
         wlChecks +
         '<p>Outer (r=' + RADIUS.toFixed(1) + '") going / plate: <span class="highlight">' +
@@ -803,7 +823,7 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INN
     ctx.fillText('WL < 6.75"', legendX + 226, wlLegY + 10);
 }
 
-['theta', 'nRises', 'thick', 'floorH', 'postDia', 'poleGap', 'spiralDia', 'orient'].forEach(function (id) {
+['theta', 'nRises', 'thick', 'floorH', 'postDia', 'poleGap', 'spiralDia', 'nosing', 'orient'].forEach(function (id) {
     const el = document.getElementById(id);
     el.addEventListener('input', calc);
     el.addEventListener('change', calc);
