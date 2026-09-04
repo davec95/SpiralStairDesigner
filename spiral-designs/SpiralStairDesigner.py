@@ -2,52 +2,49 @@
 Units: inches, converted to mm at FreeCAD API boundary.
 Clockwise ascent viewed from above (left-handed helix). Counter-clockwise descent.
 Pole is on the walker's RIGHT.
-17 regular annular-sector treads (indices 0–16) + 1 square landing (upper floor, NOT a pie).
-θ = 24.6° going (NOT 30°, NOT 24.5°, NOT 12 treads/rev).  Treads/rev = 360/24.6 ≈ 14.634146.
+18 regular annular-sector treads (indices 0–17) + 1 square landing (upper floor, NOT a pie).
+θ = 24.5° going (NOT 30°, NOT 24.6°, NOT 12 treads/rev).  Treads/rev = 360/24.5 ≈ 14.693878.
 Total rise (finished floor to finished floor): 138.07 in.
-NUM_RISES = 18 floor-to-floor including the last rise onto the platform.
-h = TOTAL_RISE / 18 = 138.07/18 ≈ 7.670556 in on EVERY riser (pie-to-pie AND pie 17 → landing).
-Last pie (17) walking Z = 17 × h ≈ 130.399444 in.
+NUM_RISES = 19 floor-to-floor including the last rise onto the platform.
+h = TOTAL_RISE / 19 = 138.07/19 ≈ 7.266842 in on EVERY riser (pie-to-pie AND pie 18 → landing).
+Last pie (18) walking Z = 18 × h ≈ 130.803158 in.
 Landing walking Z = TOTAL_RISE = 138.07 in (designer platform / upper floor).
-Last riser (pie 17 → landing) = h (EQUAL). Do NOT use leftover dump. Do NOT use 18 pies / N = 19.
-Walking Z of regular tread i (i = 0..16) = (i + 1) × h
-  17th tread (index 16) walking Z ≈ 130.399444
+Last riser (pie 18 → landing) = h (EQUAL). Do NOT use leftover dump. Do NOT use 17 pies / N = 18.
+Walking Z of regular tread i (i = 0..17) = (i + 1) × h
+  18th tread (index 17) walking Z ≈ 130.803158
   Landing walking Z = 138.07
 Pie-tread thickness = 3.0 in soffit to walking surface.
 Landing plate thickness = 3.0 in (same soffit-to-surface; not 1.0).
 Welded steel.  Part workbench primitives only.
 
-IRC / walkline (comments only; construction radii stay 2 in inner / 36 in outer):
-  r_wl = pole EDGE + 12 in = 14 in  (NOT 6 in)
-  L_going = 14 × 24.6 × π/180 ≈ 6.011 in  (PASS 6.00 IRC R311.7.9)
-  L_phys  = L_going + 1.00 ≈ 7.011 in
-  θ = 24.6° is authoritative from the numbered spec.
+IRC / walkline:
+  r_inner = pole radius + 0.25 in gap = 2.25 in
+  r_wl = r_inner + 12 in = 14.25 in
+  L_going = 14.25 × 24.5 × π/180 ≈ 6.093 in  (PASS 6.00 IRC R311.7.9)
+  L_phys  = L_going + 1.00 ≈ 7.093 in
+  θ = 24.5° is authoritative from the numbered spec.
 
 Headroom (must be ≥ 78 in):
-  Helix stacking gross = (360/24.6)×h ≈ 112.25 in PASS.
+  Helix stacking gross = (360/24.5)×h ≈ 106.78 in PASS.
   Landing 3 in plate, soffit Z = 135.07.  90° square shadow in plan.
-  First wrap (CW − from +X): [−58.2°, −148.2°]
-  IMPACT (under landing): steps 3–7.  Step 7 = 81.38 in PASS.
+  First wrap (CW − from +X): [−81.0°, −171.0°]
+  IMPACT (under landing): steps 4–7.  Step 7 = 84.20 in PASS.
   Step 8 going starts after the wrap (not under plate).
-    1  Z=  7.6706  [   0.0,  −24.6]  HR_land=127.3994
-    2  Z= 15.3411  [ −24.6,  −49.2]  HR_land=119.7289
-    3  Z= 23.0117  [ −49.2,  −73.8]  HR_land=112.0583  IMPACT (partial 15.6°)
-    4  Z= 30.6822  [ −73.8,  −98.4]  HR_land=104.3878  IMPACT
-    5  Z= 38.3528  [ −98.4, −123.0]  HR_land= 96.7172  IMPACT
-    6  Z= 46.0233  [−123.0, −147.6]  HR_land= 89.0467  IMPACT
-    7  Z= 53.6939  [−147.6, −172.2]  HR_land= 81.3761  IMPACT (0.6° of wrap)
-    8  Z= 61.3644  [−172.2, −196.8]  HR_land= 73.7056  no (starts after wrap)
-   9–17 not under the plate (open well).  Landing is the upper floor.
+    1  Z=  7.2668  [   0.0,  −24.5]  HR_land=127.8032
+    4  Z= 29.0674  [ −73.5,  −98.0]  HR_land=106.0026  IMPACT (partial 17.0°)
+    7  Z= 50.8679  [−147.0, −171.5]  HR_land= 84.2021  IMPACT (partial 24.0°)
+    8  Z= 58.1347  [−171.5, −196.0]  HR_land= 76.9353  no (starts after wrap)
+   8–18 not under the plate (open well).  Landing is the upper floor.
 
 Landing geometry:
   36×36×3 square. Local (0,0) = right-front corner at the pole axis.
-  Extra 65.4° clockwise about the pole after the 17th pie-wedge nose
-  (90° − 24.6°; was 60° when θ was 30°, 65.5° when θ was 24.5°):
-    a_lead_land = a_lead_17 − 90°
+  Extra 65.5° clockwise about the pole after the 18th pie-wedge nose
+  (90° − 24.5°; was 60° when θ was 30°, 65.4° when θ was 24.6°):
+    a_lead_land = a_lead_18 − 90°
   Posts/rails on FRONT (Y=0, walker's right as they step on) and LEFT (X=36).
   RIGHT (X=0, last-pie nose) is the ARRIVAL — no posts. BACK (Y=36) is the EXIT after a 90° left.
-  Skip pole (0,0). Helix still ends at the 17th shared post (0,36).
-  Total pie rotation −418.2°; landing nose 90° CW past 17th.
+  Skip pole (0,0). Helix still ends at the 18th shared post (0,36).
+  Total pie rotation −441.0°; landing nose 90° CW past 18th.
 """
 
 import math
@@ -66,17 +63,19 @@ INCH = 25.4
 # ═══════════════════════════════════════════════════════════════
 
 TOTAL_RISE          = 138.07        # finished floor to finished floor
-NUM_RISES           = 18            # floor-to-floor including onto platform
-NUM_REGULAR_TREADS  = NUM_RISES - 1 # 17 pies, indices 0–16
-RISE_PER_TREAD      = TOTAL_RISE / float(NUM_RISES)  # 138.07/18 ≈ 7.670556
-LAST_PIE_Z          = NUM_REGULAR_TREADS * RISE_PER_TREAD   # ≈ 130.399444
+NUM_RISES           = 19            # floor-to-floor including onto platform
+NUM_REGULAR_TREADS  = NUM_RISES - 1 # 18 pies, indices 0–17
+RISE_PER_TREAD      = TOTAL_RISE / float(NUM_RISES)  # 138.07/19 ≈ 7.266842
+LAST_PIE_Z          = NUM_REGULAR_TREADS * RISE_PER_TREAD   # ≈ 130.803158
 LANDING_Z           = TOTAL_RISE                            # 138.07  (upper floor)
 LAST_RISER          = LANDING_Z - LAST_PIE_Z                # = h (equal)
-THETA_DEG           = 24.6
-TREADS_PER_REV      = 360.0 / THETA_DEG                     # ≈ 14.634146  (NOT 12)
+THETA_DEG           = 24.5
+TREADS_PER_REV      = 360.0 / THETA_DEG                     # ≈ 14.693878  (NOT 12)
 
 CENTER_POLE_DIAM    = 4.0
 CENTER_POLE_RADIUS  = 2.0
+POLE_TO_TREAD_GAP   = 0.25          # spec 4
+TREAD_INNER         = CENTER_POLE_RADIUS + POLE_TO_TREAD_GAP  # 2.25
 
 OUTER_DIAM          = 72.0
 OUTER_RADIUS        = 36.0
@@ -84,7 +83,7 @@ OUTER_RADIUS        = 36.0
 TREAD_THICKNESS     = 3.0           # soffit to walking surface (pies)
 TREAD_OVERLAP       = 0.5           # plan nose/heel at r = 36 in
 TREAD_EXTRUSION     = TREAD_THICKNESS               # 3.0 — not 1.5
-LANDING_THICKNESS   = 3.0           # square plate (spec 6, same as pies)
+LANDING_THICKNESS   = 3.0           # square plate (spec 7, same as pies)
 
 POLE_EXTENSION      = 36.0          # above uppermost walking surface (landing)
 
@@ -97,43 +96,43 @@ HANDRAIL_DIAM       = 1.5
 HANDRAIL_RADIUS     = 0.75
 
 LANDING_SIZE        = 36.0          # square landing, side length
-LANDING_EXTRA_CW    = math.radians(90.0 - THETA_DEG)  # 65.4°
+LANDING_EXTRA_CW    = math.radians(90.0 - THETA_DEG)  # 65.5°
 LANDING_POST_OC     = 4.0           # on-center spacing of landing posts
 LANDING_POSTS_PER_SIDE = int(LANDING_SIZE / LANDING_POST_OC) + 1   # 10
 LANDING_POST_HEIGHT = HANDRAIL_HEIGHT - HANDRAIL_RADIUS   # 35.25
 
-WALKLINE_RADIUS     = CENTER_POLE_RADIUS + 12.0   # 14 in IRC
-WALKLINE_GOING      = WALKLINE_RADIUS * math.radians(THETA_DEG)  # ≈ 6.011
-WALKLINE_PHYS       = WALKLINE_GOING + 1.0                       # ≈ 7.011
+WALKLINE_RADIUS     = TREAD_INNER + 12.0          # 14.25 in IRC
+WALKLINE_GOING      = WALKLINE_RADIUS * math.radians(THETA_DEG)  # ≈ 6.093
+WALKLINE_PHYS       = WALKLINE_GOING + 1.0                       # ≈ 7.093
 
 # ═══════════════════════════════════════════════════════════════
 # Derived values
 # ═══════════════════════════════════════════════════════════════
 
-ANGLE_PER_TREAD     = math.radians(THETA_DEG)                     # 24.6°
-OUTER_GOING         = OUTER_RADIUS * ANGLE_PER_TREAD              # ≈ 15.457
-OUTER_ARC_LENGTH    = OUTER_GOING + 1.0                           # ≈ 16.457 plate
+ANGLE_PER_TREAD     = math.radians(THETA_DEG)                     # 24.5°
+OUTER_GOING         = OUTER_RADIUS * ANGLE_PER_TREAD              # ≈ 15.394
+OUTER_ARC_LENGTH    = OUTER_GOING + 1.0                           # ≈ 16.394 plate
 OVERLAP_EACH_RAD    = TREAD_OVERLAP / OUTER_RADIUS                # 0.5 / 36
-TREAD_ANGULAR_SPAN  = ANGLE_PER_TREAD + 2.0 * OVERLAP_EACH_RAD    # ≈ 26.19155°
+TREAD_ANGULAR_SPAN  = ANGLE_PER_TREAD + 2.0 * OVERLAP_EACH_RAD    # ≈ 26.09155°
 
-# 17th tread (index 16) leading-edge (nose), then extra 65.4° CW → 90° square
+# 18th tread (index 17) leading-edge (nose), then extra 65.5° CW → 90° square
 # Clockwise = negative angles from +X.
-A_START_LAST        = -float(NUM_REGULAR_TREADS - 1) * ANGLE_PER_TREAD  # −16 * 24.6°
+A_START_LAST        = -float(NUM_REGULAR_TREADS - 1) * ANGLE_PER_TREAD  # −17 * 24.5°
 A_LEAD_LAST         = A_START_LAST - TREAD_ANGULAR_SPAN
-A_LEAD_18           = A_LEAD_LAST   # alias kept for landing VERIFY prints
+A_LEAD_18           = A_LEAD_LAST   # last-pie nose (18 pies)
 A_LEAD_LAND         = A_LEAD_LAST - math.radians(90.0)
-A_RIGHT_LAND        = A_LEAD_LAST                                       # square right side = 17th nose
+A_RIGHT_LAND        = A_LEAD_LAST                                       # square right side = 18th nose
 
-# Helix covers first-tread start through the 17th last post (shared with landing).
+# Helix covers first-tread start through the 18th last post (shared with landing).
 # Does NOT continue across the landing. CW = negative angles.
 A_START_0           = 0.0
-TOTAL_ANGLE_MAG     = abs(A_LEAD_LAST - A_START_0)                      # stop at a_lead_17
+TOTAL_ANGLE_MAG     = abs(A_LEAD_LAST - A_START_0)                      # stop at a_lead_18
 TOTAL_ANGLE         = A_LEAD_LAST - A_START_0                           # negative (CW)
 
 CENTER_POLE_HEIGHT  = LANDING_Z + POLE_EXTENSION                        # 174.07
 
 HANDRAIL_HELIX_RADIUS = OUTER_RADIUS
-# Rise of helix = LANDING_Z so rail Z at a_lead_18 equals platform rail Z (174.07)
+# Rise of helix = LANDING_Z so rail Z at a_lead_18 (last pie nose) equals platform rail Z (174.07)
 HANDRAIL_HELIX_HEIGHT = LANDING_Z
 HANDRAIL_HELIX_PITCH  = HANDRAIL_HELIX_HEIGHT / (TOTAL_ANGLE_MAG / (2.0 * math.pi))
 HANDRAIL_START_Z      = HANDRAIL_HEIGHT
@@ -237,8 +236,8 @@ pole = Part.makeCylinder(inch(CENTER_POLE_RADIUS), inch(CENTER_POLE_HEIGHT),
 Part.show(pole, "CenterPole")
 
 # ═══════════════════════════════════════════════════════════════
-# 2.  Treads (indices 0–16) with balusters
-#     Walking Z = (i + 1) × h  (tread 1 at h, 17th at 17×h)
+# 2.  Treads (indices 0–17) with balusters
+#     Walking Z = (i + 1) × h  (tread 1 at h, 18th at 18×h)
 #     3 in thick: TOP at z_walk, soffit at z_walk − 3.0
 #     CW: a_start = −i·θ, a_end = a_start − SPAN
 # ═══════════════════════════════════════════════════════════════
@@ -251,7 +250,7 @@ for i in range(NUM_REGULAR_TREADS):
     a_end   = a_start - TREAD_ANGULAR_SPAN
     z_walk  = float(i + 1) * RISE_PER_TREAD
 
-    sector = annular_sector(CENTER_POLE_RADIUS, OUTER_RADIUS,
+    sector = annular_sector(TREAD_INNER, OUTER_RADIUS,
                             a_start, a_end, TREAD_EXTRUSION)
     sector.translate(Base.Vector(0, 0, inch(z_walk - TREAD_THICKNESS)))
     Part.show(sector, "Tread_{}".format(i + 1))
@@ -266,8 +265,8 @@ for i in range(NUM_REGULAR_TREADS):
         baluster_count += 1
 
 # ═══════════════════════════════════════════════════════════════
-# 3.  Landing (upper floor after pie 17) — 36×36 square, 3 in thick
-#     Right-front corner at pole. Extra 65.4° CW past the 17th pie nose.
+# 3.  Landing (upper floor after pie 18) — 36×36 square, 3 in thick
+#     Right-front corner at pole. Extra 65.5° CW past the 18th pie nose.
 #     Posts/rails on FRONT (Y=0, walker's right) and LEFT (X=36).
 #     RIGHT (X=0) is ARRIVAL from the last pie — keep it clear. BACK (Y=36) is EXIT after 90° left.
 # ═══════════════════════════════════════════════════════════════
@@ -277,7 +276,7 @@ z_land = LANDING_Z                                 # 138.07
 # Box local:
 #   (0,0)   right-front = pole
 #   (36,0)  left-front  = outer end of leading edge (a_lead_land)
-#   (0,36)  right-back  = 17th nose / shared baluster (a_lead_17)
+#   (0,36)  right-back  = 18th nose / shared baluster (a_lead_18)
 #   (36,36) left-back
 # Standard rotate by a_lead_land (NO Y-mirror, no extra ±90°, no XY translation).
 # Translate so TOP face is at z_walk (box height = 3 in).
@@ -330,7 +329,7 @@ Part.show(make_straight_rail(LANDING_SIZE, 0.0, LANDING_SIZE, LANDING_SIZE),
           "LandingRail_Left")
 
 # ═══════════════════════════════════════════════════════════════
-# 4.  Spiral handrail  (left-handed helix = CW ascent, stops at 17th last post)
+# 4.  Spiral handrail  (left-handed helix = CW ascent, stops at 18th last post)
 #     makeHelix(pitch, height, radius, apex_deg=0, left_handed=True)
 # ═══════════════════════════════════════════════════════════════
 
