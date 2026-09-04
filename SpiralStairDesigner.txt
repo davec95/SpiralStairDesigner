@@ -10,10 +10,11 @@ Specifications (authoritative — all later numbers must match these):
 6. 24.5 degree step angle radiating out from the center pole
 7. 3" tread thickness & soffit to surface of platform to step on
 8. Clockwise ascent (Counter-clockwise descent)
+9. Nosing / plan overhang = 1.25 in total (IRC legal max). Split in PLAN at r = 36 in: ½ in past nose + ¾ in past heel. This is not extra vertical thickness.
 
-Derived block — recompute from items 1–8 whenever those change. Never use leftover numbers from an older pack.
+Derived block — recompute from items 1–9 whenever those change. Never use leftover numbers from an older pack.
 
-Derived from items 1–8:
+Derived from items 1–9:
  - TOTAL_RISE (finished floor to finished floor) = 138.07 in
  - OUTER_DIAM = 72 in, R_outer = 36 in
  - CENTER_POLE_DIAM = 4 in, pole radius = 2 in
@@ -35,7 +36,7 @@ Derived from items 1–8:
  - Pole extends 36 in after the uppermost walking surface (the landing). Pole top Z = 138.07 + 36 = 174.07 in
  - Platform rail Z = 138.07 + 36 = 174.07 in. Helix start Z = 36, helix rise = LANDING_Z = 138.07, helix end Z at a_lead_18 = 174.07
  - LANDING_EXTRA_CW = 90° − 24.5° = 65.5° (not 65.4°, not 60°, not extra-CCW)
- - Angular ½ in nose + ½ in heel at r = 36 in still applies in PLAN (overlap_each = degrees(0.5/36) ≈ 0.795775°). That is not extra vertical thickness.
+ - Angular ½ in nose + ¾ in heel at r = 36 in (NOSING = 1.25 in total; overlap_nose = degrees(0.5/36) ≈ 0.795775°, overlap_heel = degrees(0.75/36) ≈ 1.193662°, TREAD_ANGULAR_SPAN = 24.5 + 1.989437 ≈ 26.48944°). That is not extra vertical thickness. Do not use ½ + ½ = 1.00 in.
  - Walkline r = TREAD_INNER + 12 = 14.25 in (not 14 in; that was gap = 0)
  - Ascent is CLOCKWISE viewed from above (left-handed helix). Descent is counter-clockwise. Angles decrease from +X (negative). Do not use CCW-positive angles.
 
@@ -94,25 +95,27 @@ Dimensions and constraints (all in inches unless noted, welded steel constructio
      Step 8 going [−171.5, −196.0] does not overlap the wrap.
      Steps 8–18 are not under the plate; 76.94 in and below on that column is NOT a headroom failure.
      IRC walkline at r = 14.25 in: L_going = 14.25 × 24.5 × π/180 ≈ 6.093 in (PASS 6.00 IRC R311.7.9).
+     L_phys = L_going + 1.25 ≈ 7.343 in (plate at walkline; ½ in nose + ¾ in heel).
      Geometry uses θ = 24.5° because the numbered spec is authoritative.
 
  - Tread geometry (regular treads 0–17):
    * Each tread is a planar segment of an annular ring.
    * Outside arc length (measured at the 6 ft diameter outer edge), θ = 24.5° not 12 treads/rev:
          going  = π × 72 × (24.5/360) ≈ 15.394 in
-         plate  = going + 1 in ≈ 16.394 in
-         (The +1 inch accounts for the ½ inch overlap on each side, ½ in nose + ½ in heel,
-          specified at r = 36 in.)
+         plate  = going + 1.25 in ≈ 16.644 in
+         (The +1.25 inch is IRC legal max overhang: ½ in past nose + ¾ in past heel,
+          specified at r = 36 in. Do NOT use +1 in / ½+½.)
      Do NOT use (π × 6 ft × 12 in/ft)/12 + 1 ≈ 19.85 in — that formula assumed 12 treads/rev (30°).
      Do NOT use 24.6° numbers (going ≈ 15.457 / plate ≈ 16.457).
    * Angular plate span at r = 36 in:
-         overlap_each = degrees(0.5 / 36) ≈ 0.795775°
-         TREAD_ANGULAR_SPAN = 24.5 + 2 × overlap_each ≈ 26.09155°
+         overlap_nose = degrees(0.5 / 36) ≈ 0.795775°
+         overlap_heel = degrees(0.75 / 36) ≈ 1.193662°
+         TREAD_ANGULAR_SPAN = 24.5 + overlap_nose + overlap_heel ≈ 26.48944°
    * Inside arc: the tread's inner edge is at TREAD_INNER = pole radius + 0.25 in gap = 2.25 in
      from the spiral center. Do NOT put the inner edge on the pole surface (r = 2 in).
    * Tread thickness: 3 inches soffit to walking surface. Extrude 3.0 in. Walking-surface TOP at Z_walk; soffit at Z_walk − 3.0. Do not extrude 1.5 in.
  - Tread overlap:
-   Each tread overlaps the tread directly below it by ½ inch along the outer edge in PLAN, and is itself overlapped by the tread above it by the same ½ inch. That is TREAD_ANGULAR_SPAN, not extra vertical thickness. Vertical thickness stays 3.0 in.
+   Each tread overlaps the tread directly below it by ¾ inch at the heel along the outer edge in PLAN, and projects ½ inch past its own nose. Total extra plate = 1.25 in at r = 36 in. That is TREAD_ANGULAR_SPAN, not extra vertical thickness. Vertical thickness stays 3.0 in.
 
 - LANDING (square platform after pie 18 — NOT a pie wedge, NOT “the 19th pie”):
   * Shape: a 36 × 36 inch square steel plate, 3 inches thick (spec 7: same soffit-to-surface as pies). It is NOT an annular sector. It is NOT a 1 in plate.
@@ -212,7 +215,7 @@ Dimensions and constraints (all in inches unless noted, welded steel constructio
    * Material: solid cylinders (Part::Cylinder)
 
 Output format (code organization):
- 1. Document-level comments with units, θ = 24.5°, N_pies = 18, N_rises = 19, h = 138.07/19, CW ascent, walkline identities (r_wl = 14.25, L_going ≈ 6.093, L_phys ≈ 7.093), total rotation −441.0° pie / landing nose 90° past 18th CW, and the full per-step headroom table above
+ 1. Document-level comments with units, θ = 24.5°, N_pies = 18, N_rises = 19, h = 138.07/19, CW ascent, walkline identities (r_wl = 14.25, L_going ≈ 6.093, L_phys ≈ 7.343), total rotation −441.0° pie / landing nose 90° past 18th CW, and the full per-step headroom table above
  2. Constants block (all numeric literals named and commented). ANGLE_PER_TREAD = 24.5°. NUM_REGULAR_TREADS = 18. NUM_RISES = 19. RISE_PER_TREAD = TOTAL_RISE / 19. LANDING_Z = 138.07 (= TOTAL_RISE). LAST_PIE_Z = 18 × h. LAST_RISER = h (equal). LANDING_EXTRA_CW = 65.5°. TREAD_THICKNESS = 3.0. LANDING_THICKNESS = 3.0. TOTAL_RISE = 138.07. POLE_TO_TREAD_GAP = 0.25. TREAD_INNER = 2.25. TREADS_PER_REV is 360/24.5, never 12. Ascent CW (negative angles). Do NOT set NUM_REGULAR_TREADS = 17. Do NOT set LAST_RISER = 5.07. Do NOT set RISE_PER_TREAD = 7.0. Do NOT set THETA_DEG = 24.6. Do NOT use CCW-positive angles.
  3. Helper functions (e.g. tread_from_angle, make_baluster)
  4. Main body: iterate over 18 regular treads + 1 square landing, create geometry, place into the active FreeCAD document
@@ -230,7 +233,7 @@ TechDraw drawing (produced by the render runner, not by this macro):
       handrail 1.5 in dia at 36 in above walking (platform rail Z = 174.07),
       pie tread 3 in soffit-to-surface, platform 3 in soffit-to-surface,
       18 pie treads + square landing, 19 equal risers,
-      outer plate arc ≈ 16.39 in, IRC walkline r = 14.25 in going ≈ 6.093 in,
+      outer plate arc ≈ 16.64 in, IRC walkline r = 14.25 in going ≈ 6.093 in, plate ≈ 7.343 in,
       under-landing headroom steps 4–7 (step 7 = 84.20 in; step 8 not under plate),
       baluster ½ in dia.
   Headless FreeCAD has no GUI, so PDF is not available from `-c`. Export the page

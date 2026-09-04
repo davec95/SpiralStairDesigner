@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IRC Spiral Stair Checker v1.23 — Spiral Stair Headroom Calculator</title>
+<title>IRC Spiral Stair Checker v1.25 — Spiral Stair Headroom Calculator</title>
 <!-- Security: CSP meta tags (client-side mitigation) -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -68,15 +68,15 @@ td.headroom-open { color: #888; font-style: italic; }
 </style>
 </head>
 <body>
-<h1>IRC Spiral Stair Checker v1.23</h1>
+<h1>IRC Spiral Stair Checker v1.25</h1>
 <div class="subtitle">Spiral Stair Headroom Calculator — nose-to-soffit at each step</div>
 
 <div class="section-label">Controls</div>
 <div class="controls">
     <div class="control-group">
-        <label for="theta">Theta (degrees per step): <span class="val" id="thetaVal">22.5</span>°</label>
+        <label for="theta">Theta (degrees per step): <span class="val" id="thetaVal">24.5</span>°</label>
         <span class="sr-only">Theta degrees per step, range 10 to 60</span>
-        <input type="range" id="theta" min="10" max="60" step="0.1" value="22.5">
+        <input type="range" id="theta" min="10" max="60" step="0.1" value="24.5">
     </div>
     <div class="control-group">
         <label for="nRises">Rises (floor→floor, incl. onto platform): <span class="val" id="nRisesVal">19</span>
@@ -102,8 +102,8 @@ td.headroom-open { color: #888; font-style: italic; }
     </div>
     <div class="control-group">
         <label for="poleGap">Pole to Tread Gap:</label>
-        <span class="sr-only">Gap from pole surface to narrow end of tread, 0 to 2 inches in 0.25 inch steps. Default 0.75 inches.</span>
-        <input type="number" id="poleGap" value="0.75" step="0.25" min="0" max="2">
+        <span class="sr-only">Gap from pole surface to narrow end of tread, 0 to 2 inches in 0.25 inch steps. Default 0.25 inches.</span>
+        <input type="number" id="poleGap" value="0.25" step="0.25" min="0" max="2">
     </div>
     <div class="control-group">
         <label for="spiralDia">Spiral Diameter:</label>
@@ -116,9 +116,9 @@ td.headroom-open { color: #888; font-style: italic; }
         <input type="number" id="nosing" value="1.25" step="0.25" min="0.75" max="1.25">
     </div>
     <div class="control-group">
-        <label for="orient">Orientation offset: <span class="val" id="orientVal">135</span>° (step 1 heel from top)</label>
+        <label for="orient">Orientation offset: <span class="val" id="orientVal">99</span>° (step 1 heel from top)</label>
         <span class="sr-only">Orientation offset in degrees, range 0 to 359</span>
-        <input type="range" id="orient" min="0" max="359" step="1" value="135">
+        <input type="range" id="orient" min="0" max="359" step="1" value="99">
     </div>
     <div class="control-group">
         <label>Ascent (from above)</label>
@@ -132,11 +132,11 @@ td.headroom-open { color: #888; font-style: italic; }
 
 <div class="fixed-val">
     Outer radius = <span id="radiusVal">36</span>"
-    &nbsp;|&nbsp; Walkline r = narrow end of tread + 12" = <span id="walkPathVal">14.75</span>"
+    &nbsp;|&nbsp; Walkline r = narrow end of tread + 12" = <span id="walkPathVal">14.25</span>"
     &nbsp;|&nbsp; Landing plan span = 90° <span id="landDirLabel">clockwise</span> from last pie nose
     &nbsp;|&nbsp; Walkline depth <span id="wlPlateBadge" class="wl-badge wl-green">—</span>
     &nbsp;<span id="wlGoingBadge" class="wl-badge wl-green">—</span>
-    &nbsp;|&nbsp; Walkline radius (calculated as pole radius, pole to tread gap + 12") <span id="wlRadBadge" class="wl-badge wl-green">14.75"</span>
+    &nbsp;|&nbsp; Walkline radius (calculated as pole radius, pole to tread gap + 12") <span id="wlRadBadge" class="wl-badge wl-green">14.25"</span>
 </div>
 
 <div class="section-label">Visualization</div>
@@ -172,7 +172,7 @@ td.headroom-open { color: #888; font-style: italic; }
     <p>Step #0 = ground at 0°. Steps #1…N−1 are pie treads. <b>Rises</b> N is floor-to-floor count including the last rise onto the platform; uniform rise = floor-to-floor / N, constrained to 7.00–9.5″. <b>Height</b> of pie i = i × rise. Platform height = N × rise = floor-to-floor. Open well = nothing in plan above that nose.</p>
     <p>IRC R311.7.2 minimum is 78" (6'8"), measured vertically from the nosing.</p>
     <p><b>Walkline</b> is 12" out from the narrow end of the tread (pole radius + pole-to-tread gap + 12"), not from pole center. Nosing-to-nosing depth = r_wl · θ_rad = (2π r_wl) / treads-per-turn. Plate depth = going + 1.25" (½" past nose + ¾" past heel — IRC legal max overhang). Color on the plan spiral: red if going < 6.00" <i>or</i> plate < 6.75"; yellow if plate is 6.75–7.49"; green if plate ≥ 7.5". Three walkline checks: radius ≤ 24½" (center of pole to walkline), tread depth (plate) ≥ 6¾", going at walkline ≥ 6".</p>
-    <p><b>Going</b> is the arc length along the walkline (12" from the narrow end of the tread) between the nosings of two adjacent treads — i.e. r_wl · θ (radians). At θ = 22.5°, 4" pole, 0.75" gap this is ~5.79" (below the 6.00" going minimum; plate ~7.04" is still yellow). It's the separation between consecutive nosings measured at the walking path.</p>
+    <p><b>Going</b> is the arc length along the walkline (12" from the narrow end of the tread) between the nosings of two adjacent treads — i.e. r_wl · θ (radians). At θ = 24.5°, 4" pole, 0.25" gap this is ~6.09". It's the separation between consecutive nosings measured at the walking path.</p>
     <p><b>Plate</b> is the usable tread arc length at the walkline: going + nosing (½" past the nose, ¾" past the heel at the 1.25" IRC max). This is what you actually step on — the tread extends slightly beyond each nosing so the tread material doesn't end right at the nosing line. Two independent header badges: plate colors on plate alone (≥ 7.5" green, 6.75–7.49" yellow, < 6.75" red); going colors on going alone (≥ 6.00" green, < 6.00" red). They do not share a class — a yellow plate no longer paints the going, and a red going no longer paints the plate.</p>
 </div>
 
@@ -190,7 +190,7 @@ const WL_YELLOW = 6.75;        // plate depth 6.75–7.5"  (tread depth ≥ 6¾"
 const WL_GOING_MIN = 6.00;     // nosing-to-nosing at walkline
 const WL_RADIUS_MAX = 24.5;    // checklist: center of pole to walkline ≤ 24½"
 const WL_RADIUS_BADGE_MAX = 24; // header badge: green ≤ 24", red if not (no yellow)
-const POLE_GAP_DEFAULT = 0.75;
+const POLE_GAP_DEFAULT = 0.25;
 const POLE_GAP_MIN = 0;
 const POLE_GAP_MAX = 2;
 

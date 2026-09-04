@@ -21,7 +21,7 @@ IRC / walkline:
   r_inner = pole radius + 0.25 in gap = 2.25 in
   r_wl = r_inner + 12 in = 14.25 in
   L_going = 14.25 × 24.5 × π/180 ≈ 6.093 in  (PASS 6.00 IRC R311.7.9)
-  L_phys  = L_going + 1.00 ≈ 7.093 in
+  L_phys  = L_going + 1.25 ≈ 7.343 in  (½ in nose + ¾ in heel; IRC legal max)
   θ = 24.5° is authoritative from the numbered spec.
 
 Headroom (must be ≥ 78 in):
@@ -81,7 +81,9 @@ OUTER_DIAM          = 72.0
 OUTER_RADIUS        = 36.0
 
 TREAD_THICKNESS     = 3.0           # soffit to walking surface (pies)
-TREAD_OVERLAP       = 0.5           # plan nose/heel at r = 36 in
+TREAD_OVERLAP_NOSE  = 0.5           # plan, past going nose at r = 36 in
+TREAD_OVERLAP_HEEL  = 0.75          # plan, past going heel at r = 36 in
+NOSING_TOTAL        = TREAD_OVERLAP_NOSE + TREAD_OVERLAP_HEEL  # 1.25 IRC max
 TREAD_EXTRUSION     = TREAD_THICKNESS               # 3.0 — not 1.5
 LANDING_THICKNESS   = 3.0           # square plate (spec 7, same as pies)
 
@@ -103,7 +105,7 @@ LANDING_POST_HEIGHT = HANDRAIL_HEIGHT - HANDRAIL_RADIUS   # 35.25
 
 WALKLINE_RADIUS     = TREAD_INNER + 12.0          # 14.25 in IRC
 WALKLINE_GOING      = WALKLINE_RADIUS * math.radians(THETA_DEG)  # ≈ 6.093
-WALKLINE_PHYS       = WALKLINE_GOING + 1.0                       # ≈ 7.093
+WALKLINE_PHYS       = WALKLINE_GOING + NOSING_TOTAL              # ≈ 7.343
 
 # ═══════════════════════════════════════════════════════════════
 # Derived values
@@ -111,17 +113,18 @@ WALKLINE_PHYS       = WALKLINE_GOING + 1.0                       # ≈ 7.093
 
 ANGLE_PER_TREAD     = math.radians(THETA_DEG)                     # 24.5°
 OUTER_GOING         = OUTER_RADIUS * ANGLE_PER_TREAD              # ≈ 15.394
-OUTER_ARC_LENGTH    = OUTER_GOING + 1.0                           # ≈ 16.394 plate
-OVERLAP_EACH_RAD    = TREAD_OVERLAP / OUTER_RADIUS                # 0.5 / 36
-TREAD_ANGULAR_SPAN  = ANGLE_PER_TREAD + 2.0 * OVERLAP_EACH_RAD    # ≈ 26.09155°
+OUTER_ARC_LENGTH    = OUTER_GOING + NOSING_TOTAL                  # ≈ 16.644 plate
+OVERLAP_NOSE_RAD    = TREAD_OVERLAP_NOSE / OUTER_RADIUS           # 0.5 / 36
+OVERLAP_HEEL_RAD    = TREAD_OVERLAP_HEEL / OUTER_RADIUS           # 0.75 / 36
+TREAD_ANGULAR_SPAN  = ANGLE_PER_TREAD + OVERLAP_NOSE_RAD + OVERLAP_HEEL_RAD  # ≈ 26.48944°
 
-# 18th tread (index 17) leading-edge (nose), then extra 65.5° CW → 90° square
-# Clockwise = negative angles from +X.
-A_START_LAST        = -float(NUM_REGULAR_TREADS - 1) * ANGLE_PER_TREAD  # −17 * 24.5°
-A_LEAD_LAST         = A_START_LAST - TREAD_ANGULAR_SPAN
-A_LEAD_18           = A_LEAD_LAST   # last-pie nose (18 pies)
-A_LEAD_LAND         = A_LEAD_LAST - math.radians(90.0)
-A_RIGHT_LAND        = A_LEAD_LAST                                       # square right side = 18th nose
+# Landing sits on the last pie GOING nose (matches HTML platStartDeg = nPies·θ = 441°).
+# Pie plates extend ½ in past that nose and ¾ in past the heel; that is TREAD_ANGULAR_SPAN,
+# not a rotation of the square. Clockwise = negative angles from +X.
+A_LEAD_18           = -float(NUM_REGULAR_TREADS) * ANGLE_PER_TREAD      # −18 × 24.5° = −441°
+A_LEAD_LAST         = A_LEAD_18
+A_LEAD_LAND         = A_LEAD_18 - math.radians(90.0)                    # −531°
+A_RIGHT_LAND        = A_LEAD_18                                         # square right side = 18th going nose
 
 # Helix covers first-tread start through the 18th last post (shared with landing).
 # Does NOT continue across the landing. CW = negative angles.
@@ -239,15 +242,17 @@ Part.show(pole, "CenterPole")
 # 2.  Treads (indices 0–17) with balusters
 #     Walking Z = (i + 1) × h  (tread 1 at h, 18th at 18×h)
 #     3 in thick: TOP at z_walk, soffit at z_walk − 3.0
-#     CW: a_start = −i·θ, a_end = a_start − SPAN
+#     CW: plate heel = −i·θ + heel_overhang, plate nose = −(i+1)·θ − nose_overhang
 # ═══════════════════════════════════════════════════════════════
 
 tread_count    = 0
 baluster_count = 0
 
 for i in range(NUM_REGULAR_TREADS):
-    a_start = -float(i) * ANGLE_PER_TREAD
-    a_end   = a_start - TREAD_ANGULAR_SPAN
+    a_going_heel = -float(i) * ANGLE_PER_TREAD
+    a_going_nose = a_going_heel - ANGLE_PER_TREAD
+    a_start = a_going_heel + OVERLAP_HEEL_RAD   # ¾ in past heel (less CW)
+    a_end   = a_going_nose - OVERLAP_NOSE_RAD   # ½ in past nose (more CW)
     z_walk  = float(i + 1) * RISE_PER_TREAD
 
     sector = annular_sector(TREAD_INNER, OUTER_RADIUS,
@@ -258,8 +263,9 @@ for i in range(NUM_REGULAR_TREADS):
 
     for j in range(BALUSTERS_PER_TREAD):
         if i > 0 and j == 0:
-            continue          # shared with previous tread's last baluster
-        ba = a_start + float(j) * (a_end - a_start) / float(BALUSTERS_PER_TREAD - 1)
+            continue          # shared with previous tread's last baluster (going nose)
+        # Posts on going nosings (shared), not plate-overhang corners.
+        ba = a_going_heel + float(j) * (a_going_nose - a_going_heel) / float(BALUSTERS_PER_TREAD - 1)
         cyl, _h = make_baluster(ba, z_walk)
         Part.show(cyl, "Baluster_{}".format(baluster_index(i, j)))
         baluster_count += 1
