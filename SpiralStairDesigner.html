@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IRC Spiral Stair Checker v1.12.17 — Spiral Stair Headroom Calculator</title>
+<title>IRC Spiral Stair Checker v1.12.21 — Spiral Stair Headroom Calculator</title>
 <!-- Security: CSP meta tags (client-side mitigation) -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -52,6 +52,10 @@ td.headroom-open { color: #888; font-style: italic; }
 .wl-green { background: #2ecc71; }
 .wl-yellow { background: #f1c40f; }
 .wl-red { background: #e74c3c; color: #fff; }
+.wl-checks { list-style: none; margin: 8px 0 0 0; padding: 0; }
+.wl-checks li { margin: 2px 0; }
+.wl-checks .pass { color: #2ecc71; }
+.wl-checks .fail { color: #e74c3c; font-weight: bold; }
 .dir-toggle { display: flex; gap: 6px; margin-top: 4px; }
 .dir-btn {
     background: #2a2a2a; color: #aaa; border: 1px solid #555;
@@ -64,22 +68,22 @@ td.headroom-open { color: #888; font-style: italic; }
 </style>
 </head>
 <body>
-<h1>IRC Spiral Stair Checker v1.12.17</h1>
+<h1>IRC Spiral Stair Checker v1.12.21</h1>
 <div class="subtitle">Spiral Stair Headroom Calculator — nose-to-soffit at each step</div>
 
 <div class="section-label">Controls</div>
 <div class="controls">
     <div class="control-group">
-        <label for="theta">Theta (degrees per step): <span class="val" id="thetaVal">24.6</span>°</label>
+        <label for="theta">Theta (degrees per step): <span class="val" id="thetaVal">24.5</span>°</label>
         <span class="sr-only">Theta degrees per step, range 10 to 60</span>
-        <input type="range" id="theta" min="10" max="60" step="0.1" value="24.6">
+        <input type="range" id="theta" min="10" max="60" step="0.1" value="24.5">
     </div>
     <div class="control-group">
-        <label for="nRises">Rises (floor→floor, incl. onto platform): <span class="val" id="nRisesVal">18</span>
-            &nbsp;→&nbsp; uniform <span class="val" id="riseVal">7.67</span>"</label>
+        <label for="nRises">Rises (floor→floor, incl. onto platform): <span class="val" id="nRisesVal">19</span>
+            &nbsp;→&nbsp; uniform <span class="val" id="riseVal">7.27</span>"</label>
         <span class="sr-only">Number of uniform rises. Left is minimum rise, right is maximum rise.</span>
-        <input type="range" id="nRises" min="15" max="18" step="1" value="15">
-        <div class="fixed-val" id="riseRangeHint">Legal N for 7.67–9.5″ uniform rise</div>
+        <input type="range" id="nRises" min="15" max="19" step="1" value="15">
+        <div class="fixed-val" id="riseRangeHint">Legal N for 7.00–9.5″ uniform rise</div>
     </div>
     <div class="control-group">
         <label for="thick">Tread/Platform Thickness: <span class="val" id="thickVal">3.0</span>"</label>
@@ -95,6 +99,11 @@ td.headroom-open { color: #888; font-style: italic; }
         <label for="postDia">Center Post Diameter:</label>
         <span class="sr-only">Center post diameter in inches</span>
         <input type="number" id="postDia" value="4" step="0.5" min="1" max="12">
+    </div>
+    <div class="control-group">
+        <label for="poleGap">Pole to Tread Gap:</label>
+        <span class="sr-only">Gap from pole surface to narrow end of tread, 0 to 2 inches in 0.25 inch steps. Default 0.75 inches.</span>
+        <input type="number" id="poleGap" value="0.75" step="0.25" min="0" max="2">
     </div>
     <div class="control-group">
         <label for="spiralDia">Spiral Diameter:</label>
@@ -118,7 +127,7 @@ td.headroom-open { color: #888; font-style: italic; }
 
 <div class="fixed-val">
     Outer radius = <span id="radiusVal">36</span>"
-    &nbsp;|&nbsp; Walkline r = pole edge + 12" = <span id="walkPathVal">14</span>"
+    &nbsp;|&nbsp; Walkline r = narrow end of tread + 12" = <span id="walkPathVal">14.75</span>"
     &nbsp;|&nbsp; Landing plan span = 90° <span id="landDirLabel">clockwise</span> from last pie nose
     &nbsp;|&nbsp; Walkline depth <span id="wlBadge" class="wl-badge wl-green">—</span>
 </div>
@@ -153,25 +162,29 @@ td.headroom-open { color: #888; font-style: italic; }
     <p>Pie tread k occupies the going behind its nose: plan sector <code>((k−1)·θ, k·θ]</code>. The soffit is <code>k · rise − thickness</code>.</p>
     <p>36×36 landing occupies 90° in the climb direction from the last pie <b>nose</b> (same as the square with the pole at a corner). That is one full tread past the last going, then <code>90° − θ</code> more. Its soffit is <code>floor-to-floor − thickness</code>. If both a pie and the landing cover the step, the lower soffit wins.</p>
     <p><b>Orientation offset</b> rotates the whole plan 0–359° (1° steps). 0° = step 1 heel at the top. Positive offset is in the climb direction. <b>CW/CCW</b> is ascent as viewed from above.</p>
-    <p>Step #0 = ground at 0°. Steps #1…N−1 are pie treads. <b>Rises</b> N is floor-to-floor count including the last rise onto the platform; uniform rise = floor-to-floor / N, constrained to 7.67–9.5″ (N=19 / 7.27″ is excluded — those packs fail going/headroom). <b>Height</b> of pie i = i × rise. Platform height = N × rise = floor-to-floor. Open well = nothing in plan above that nose.</p>
+    <p>Step #0 = ground at 0°. Steps #1…N−1 are pie treads. <b>Rises</b> N is floor-to-floor count including the last rise onto the platform; uniform rise = floor-to-floor / N, constrained to 7.00–9.5″. <b>Height</b> of pie i = i × rise. Platform height = N × rise = floor-to-floor. Open well = nothing in plan above that nose.</p>
     <p>IRC R311.7.2 minimum is 78" (6'8"), measured vertically from the nosing.</p>
-    <p><b>Walkline</b> is 12" from the pole-side (narrow) edge of the tread — not from pole center. Nosing-to-nosing depth = r_wl · θ_rad = (2π r_wl) / treads-per-turn. Plate depth = going + 1.25" (½" past nose + ¾" past heel — IRC legal max overhang). Color on the plan spiral: red if going < 6.00" <i>or</i> plate < 6.75"; yellow if plate is 6.75–7.49"; green if plate ≥ 7.5". Spirals are IRC R311.7.10.1 (walkline ≥ 6¾"); going ≥ 6" is also checked because 24.5° fails it at r = 14".</p>
-    <p><b>Going</b> is the arc length along the walkline (12" from the pole edge) between the nosings of two adjacent treads — i.e. r_wl · θ (radians). At θ = 24.6° this is ~6.01" for a 4" pole / 72" dia spiral (the first 0.1° step that clears 6.00"). It's the separation between consecutive nosings measured at the walking path.</p>
+    <p><b>Walkline</b> is 12" out from the narrow end of the tread (pole radius + pole-to-tread gap + 12"), not from pole center. Nosing-to-nosing depth = r_wl · θ_rad = (2π r_wl) / treads-per-turn. Plate depth = going + 1.25" (½" past nose + ¾" past heel — IRC legal max overhang). Color on the plan spiral: red if going < 6.00" <i>or</i> plate < 6.75"; yellow if plate is 6.75–7.49"; green if plate ≥ 7.5". Three walkline checks: radius ≤ 24½" (center of pole to walkline), tread depth (plate) ≥ 6¾", going at walkline ≥ 6".</p>
+    <p><b>Going</b> is the arc length along the walkline (12" from the narrow end of the tread) between the nosings of two adjacent treads — i.e. r_wl · θ (radians). At θ = 24.5°, 4" pole, 0.75" gap this is ~6.31". It's the separation between consecutive nosings measured at the walking path.</p>
     <p><b>Plate</b> is the usable tread arc length at the walkline: going + 1.25" (½" past the nose, ¾" past the heel). This is what you actually step on — the tread extends slightly beyond each nosing so the tread material doesn't end right at the nosing line. The color badge shows whether the plate is ≥ 7.5" (green / plenty), 6.75–7.49" (yellow / IRC spiral walkline minimum is 6¾"), or failing (red).</p>
 </div>
 
 <script>
 const LANDING_SPAN = 90; // square landing, degrees
 const IRC_MIN_HR = 78;
-const IRC_RISE_MIN = 7.67;     // checker min rise (N=19 / 7.27" packs fail code)
+const IRC_RISE_MIN = 7.00;     // checker min rise (user band; IRC spiral max is 9.5")
 const IRC_RISE_MAX = 9.5;      // IRC spiral max riser (R311.7.9 / R311.7.5.1)
-const WL_OFFSET = 12;          // IRC: 12" from inner rail (pole edge)
+const WL_OFFSET = 12;          // IRC: 12" from inner rail (narrow end of tread)
 const WL_OVERHANG = 1.25;      // Legal maximum: ½" past nose + ¾" past heel
 const WL_GREEN = 7.5;          // plate depth ≥ 7.5"
-const WL_YELLOW = 6.75;        // plate depth 6.75–7.5"
+const WL_YELLOW = 6.75;        // plate depth 6.75–7.5"  (tread depth ≥ 6¾")
 const WL_GOING_MIN = 6.00;     // nosing-to-nosing at walkline
+const WL_RADIUS_MAX = 24.5;    // center of pole to walkline ≤ 24½"
+const POLE_GAP_DEFAULT = 0.75;
+const POLE_GAP_MIN = 0;
+const POLE_GAP_MAX = 2;
 
-/** Integer N such that FLOOR_H/N is in [7.67, 9.5]. Last of the N risers is onto the platform. */
+/** Integer N such that FLOOR_H/N is in [7.00, 9.5]. Last of the N risers is onto the platform. */
 function legalRiseCountRange(floorH) {
     const nMin = Math.max(1, Math.ceil(floorH / IRC_RISE_MAX - 1e-12));
     const nMax = Math.max(nMin, Math.floor(floorH / IRC_RISE_MIN + 1e-12));
@@ -209,7 +222,7 @@ function syncRiseSlider(floorH) {
     const hint = document.getElementById('riseRangeHint');
     hint.textContent = 'Left = min rise (' + (floorH / nMax).toFixed(2) +
         '", N=' + nMax + ') · right = max rise (' + (floorH / nMin).toFixed(2) +
-        '", N=' + nMin + '). Uniform 7.67–9.5″, last rise onto the platform.';
+        '", N=' + nMin + '). Uniform 7.00–9.5″, last rise onto the platform.';
     return { nRises: n, rise };
 }
 
@@ -317,16 +330,21 @@ function calc() {
     const FLOOR_H = parseFloat(document.getElementById('floorH').value) || 138.07;
     const { nRises, rise: RISE } = syncRiseSlider(FLOOR_H);
     const POST_DIA = parseFloat(document.getElementById('postDia').value) || 4;
+    let POLE_GAP = parseFloat(document.getElementById('poleGap').value);
+    if (!Number.isFinite(POLE_GAP)) POLE_GAP = POLE_GAP_DEFAULT;
+    if (POLE_GAP < POLE_GAP_MIN) POLE_GAP = POLE_GAP_MIN;
+    if (POLE_GAP > POLE_GAP_MAX) POLE_GAP = POLE_GAP_MAX;
     const SPIRAL_DIA = parseFloat(document.getElementById('spiralDia').value) || 72;
     const ORIENT = ((parseInt(document.getElementById('orient').value, 10) % 360) + 360) % 360;
     const RADIUS = SPIRAL_DIA / 2;
     const POLE_RAD = POST_DIA / 2;
-    const WALK_RAD = POLE_RAD + WL_OFFSET; // 12" from pole-side (narrow) edge, not pole center
+    const TREAD_INNER = POLE_RAD + POLE_GAP; // narrow end of tread
+    const WALK_RAD = TREAD_INNER + WL_OFFSET; // pole r + gap + 12"
 
     document.getElementById('thetaVal').textContent = THETA.toFixed(1);
     document.getElementById('thickVal').textContent = TREAD_THICK.toFixed(1);
     document.getElementById('radiusVal').textContent = RADIUS.toFixed(1);
-    document.getElementById('walkPathVal').textContent = WALK_RAD.toFixed(1);
+    document.getElementById('walkPathVal').textContent = WALK_RAD.toFixed(2);
     document.getElementById('orientVal').textContent = String(ORIENT);
     document.getElementById('landDirLabel').textContent = climbCCW ? 'counter-clockwise' : 'clockwise';
     document.getElementById('dirCW').classList.toggle('active', !climbCCW);
@@ -415,13 +433,17 @@ function calc() {
 
     const goingFail = Lgoing < WL_GOING_MIN;
     const plateFail = Lphys < WL_YELLOW;
-    const wlStatus = goingFail
-        ? '<span class="warn">⚠ Walkline going < 6.00"</span>'
-        : (plateFail
-            ? '<span class="warn">⚠ Walkline plate < 6.75"</span>'
-            : (Lphys >= WL_GREEN
-                ? '<span class="ok">✓ Walkline plate ≥ 7.5"</span>'
-                : '<span class="warn">Walkline plate 6.75–7.49"</span>'));
+    const radiusFail = WALK_RAD > WL_RADIUS_MAX + 1e-9;
+    function checkLi(ok, label) {
+        return '<li class="' + (ok ? 'pass' : 'fail') + '">' +
+            (ok ? '✅ Pass' : '❌ Fail') + ' — ' + label + '</li>';
+    }
+    const wlChecks =
+        '<ul class="wl-checks">' +
+        checkLi(!radiusFail, 'Radius ≤ 24½" <span style="color:#888">(center of pole to walkline = ' + WALK_RAD.toFixed(2) + '")</span>') +
+        checkLi(!plateFail, 'Tread depth ≥ 6¾" <span style="color:#888">(plate = ' + Lphys.toFixed(3) + '")</span>') +
+        checkLi(!goingFail, 'Going at walkline ≥ 6" <span style="color:#888">(going = ' + Lgoing.toFixed(3) + '")</span>') +
+        '</ul>';
 
     document.getElementById('summaryBox').innerHTML =
         '<p>Steps per 90°: <span class="highlight">' + stepsPer90 +
@@ -430,10 +452,12 @@ function calc() {
         '</span> &nbsp;|&nbsp; Pie rotation: <span class="highlight">' + totalRot + '</span>' +
         ' &nbsp;|&nbsp; Orient: <span class="highlight">' + ORIENT + '°</span>' +
         ' &nbsp;|&nbsp; Ascent: <span class="highlight">' + (climbCCW ? 'CCW' : 'CW') + '</span></p>' +
-        '<p>Walkline r = ' + POST_DIA.toFixed(1) + '/2 + 12 = <span class="highlight">' + WALK_RAD.toFixed(2) +
-        ' &nbsp;|&nbsp; Walkline going r·θ = (2π r)/(360/θ) = <span class="highlight">' + Lgoing.toFixed(3) +
+        '<p>Walkline r = pole r + gap + 12 = ' + POLE_RAD.toFixed(2) + ' + ' + POLE_GAP.toFixed(2) +
+        ' + 12 = <span class="highlight">' + WALK_RAD.toFixed(2) +
+        '</span> &nbsp;|&nbsp; Walkline going r·θ = <span class="highlight">' + Lgoing.toFixed(3) +
         '"</span> &nbsp;|&nbsp; Plate = going + 1.25" = <span class="highlight">' + Lphys.toFixed(3) +
-        '"</span> ' + wlStatus + '</p>' +
+        '"</span></p>' +
+        wlChecks +
         '<p>Outer (r=' + RADIUS.toFixed(1) + '") going / plate: <span class="highlight">' +
         LgoingOuter.toFixed(2) + '" / ' + LphysOuter.toFixed(2) + '"</span></p>' +
         '<p style="margin-top:6px;">Helix stack (360/θ)×rise − thickness (only if a mate stacks on the nose): <span class="highlight">' +
@@ -451,7 +475,7 @@ function calc() {
         '", underside at ' + platUnderside.toFixed(2) +
         '". Headroom = soffit directly above the nose − walking Z. Open well is not a number.</p>';
 
-    drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, SPIRAL_DIA, steps, platUnderside, platHeight, nPies, FLOOR_H, Lphys, Lgoing, ORIENT);
+    drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INNER, SPIRAL_DIA, steps, platUnderside, platHeight, nPies, FLOOR_H, Lphys, Lgoing, ORIENT);
 }
 
 function sizeCanvas() {
@@ -469,7 +493,7 @@ function sizeCanvas() {
     return { canvas, ctx, W: desiredW, H: desiredH };
 }
 
-function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, SPIRAL_DIA, steps, platUnderside, platHeight, nPies, FLOOR_H, Lphys, Lgoing, ORIENT) {
+function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INNER, SPIRAL_DIA, steps, platUnderside, platHeight, nPies, FLOOR_H, Lphys, Lgoing, ORIENT) {
     const { ctx, W, H } = sizeCanvas();
 
     ctx.fillStyle = '#111';
@@ -507,7 +531,7 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, SPIRAL_DI
     ctx.stroke();
 
     const wlCol = walklineColor(Lphys, Lgoing);
-    // Full walkline circle (12" from pole edge) — faint track
+    // Full walkline circle (12" from narrow end of tread) — faint track
     ctx.strokeStyle = wlCol;
     ctx.globalAlpha = 0.25;
     ctx.lineWidth = 6;
@@ -532,18 +556,18 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, SPIRAL_DI
         ctx.arc(planCx, planCy, RADIUS * planScale, startAngle, endAngle, ccwArc);
         ctx.stroke();
         ctx.beginPath();
-        ctx.arc(planCx, planCy, POLE_RAD * planScale, startAngle, endAngle, ccwArc);
+        ctx.arc(planCx, planCy, TREAD_INNER * planScale, startAngle, endAngle, ccwArc);
         ctx.stroke();
         ctx.beginPath();
-        ctx.moveTo(planCx + POLE_RAD * planScale * Math.cos(startAngle), planCy + POLE_RAD * planScale * Math.sin(startAngle));
+        ctx.moveTo(planCx + TREAD_INNER * planScale * Math.cos(startAngle), planCy + TREAD_INNER * planScale * Math.sin(startAngle));
         ctx.lineTo(planCx + RADIUS * planScale * Math.cos(startAngle), planCy + RADIUS * planScale * Math.sin(startAngle));
         ctx.stroke();
         ctx.beginPath();
-        ctx.moveTo(planCx + POLE_RAD * planScale * Math.cos(endAngle), planCy + POLE_RAD * planScale * Math.sin(endAngle));
+        ctx.moveTo(planCx + TREAD_INNER * planScale * Math.cos(endAngle), planCy + TREAD_INNER * planScale * Math.sin(endAngle));
         ctx.lineTo(planCx + RADIUS * planScale * Math.cos(endAngle), planCy + RADIUS * planScale * Math.sin(endAngle));
         ctx.stroke();
 
-        // Walkline arc on this pie — 12" from pole-side edge, colored by plate depth
+        // Walkline arc on this pie — 12" from narrow end of tread, colored by plate depth
         ctx.strokeStyle = wlCol;
         ctx.lineWidth = 4;
         ctx.globalAlpha = 1;
@@ -779,7 +803,7 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, SPIRAL_DI
     ctx.fillText('WL < 6.75"', legendX + 226, wlLegY + 10);
 }
 
-['theta', 'nRises', 'thick', 'floorH', 'postDia', 'spiralDia', 'orient'].forEach(function (id) {
+['theta', 'nRises', 'thick', 'floorH', 'postDia', 'poleGap', 'spiralDia', 'orient'].forEach(function (id) {
     const el = document.getElementById(id);
     el.addEventListener('input', calc);
     el.addEventListener('change', calc);
