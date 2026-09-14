@@ -3,51 +3,104 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IRC Spiral Stair Checker v1.25 — Spiral Stair Headroom Calculator</title>
+<title>IRC Spiral Stair Checker v1.26 — Spiral Stair Headroom Calculator</title>
 <!-- Security: CSP meta tags (client-side mitigation) -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="dark light">
 <style>
+:root, html[data-theme="dark"] {
+    --bg: #1e1e1e;
+    --fg: #d0d0d0;
+    --accent: #5dade2;
+    --gold: #f0c674;
+    --muted: #888;
+    --muted2: #aaa;
+    --notes: #777;
+    --panel: #2a2a2a;
+    --border: #555;
+    --line: #333;
+    --section-border: #444;
+    --canvas-bg: #111;
+    --canvas-border: #333;
+    --grid: #222;
+    --grid-label: #555;
+    --pole: #888;
+    --pole-stroke: #aaa;
+    --legend-fg: #d0d0d0;
+    --open-hr: #666;
+    --dir-active-bg: #1a4a6a;
+    --hover-fg: #d0d0d0;
+    color-scheme: dark;
+}
+html[data-theme="light"] {
+    --bg: #f7f5f0;
+    --fg: #222222;
+    --accent: #1a6aa3;
+    --gold: #8a6a12;
+    --muted: #555555;
+    --muted2: #444444;
+    --notes: #555555;
+    --panel: #ffffff;
+    --border: #bbbbbb;
+    --line: #cccccc;
+    --section-border: #cccccc;
+    --canvas-bg: #ffffff;
+    --canvas-border: #cccccc;
+    --grid: #e8e8e8;
+    --grid-label: #666666;
+    --pole: #666666;
+    --pole-stroke: #444444;
+    --legend-fg: #222222;
+    --open-hr: #888888;
+    --dir-active-bg: #d6ebf7;
+    --hover-fg: #111111;
+    color-scheme: light;
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
-    background: #1e1e1e; color: #d0d0d0; color-scheme: dark;
+    background: var(--bg); color: var(--fg); color-scheme: inherit;
     font-family: 'Segoe UI', Consolas, monospace;
 }
 body {
     padding: 16px; font-size: 14px; line-height: 1.5;
 }
-h1 { color: #5dade2; font-size: 1.4em; margin-bottom: 4px; }
-.subtitle { color: #888; font-size: 0.85em; margin-bottom: 16px; }
-.section-label { color: #f0c674; font-weight: bold; margin-top: 16px; margin-bottom: 6px; font-size: 1em; border-bottom: 1px solid #444; padding-bottom: 3px; }
+.page-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+.page-header h1 { margin-bottom: 4px; }
+.theme-toggle { min-width: auto; }
+h1 { color: var(--accent); font-size: 1.4em; margin-bottom: 4px; }
+.subtitle { color: var(--muted); font-size: 0.85em; margin-bottom: 16px; }
+.section-label { color: var(--gold); font-weight: bold; margin-top: 16px; margin-bottom: 6px; font-size: 1em; border-bottom: 1px solid var(--section-border); padding-bottom: 3px; }
 .controls { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 12px; }
 .control-group { min-width: 200px; }
-.control-group label { display: block; font-size: 0.8em; color: #aaa; margin-bottom: 2px; }
-.control-group .val { color: #5dade2; font-weight: bold; font-size: 1em; }
-input[type=range] { width: 100%; accent-color: #5dade2; }
+.control-group label { display: block; font-size: 0.8em; color: var(--muted2); margin-bottom: 2px; }
+.control-group .val { color: var(--accent); font-weight: bold; font-size: 1em; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
 input[type=number] {
-    background: #2a2a2a; color: #5dade2; border: 1px solid #555;
+    background: var(--panel); color: var(--accent); border: 1px solid var(--border);
     padding: 4px 8px; font-size: 1em; width: 100px;
     font-family: 'Segoe UI', Consolas, monospace;
 }
-input[type=number]:focus { outline: 1px solid #5dade2; border-color: #5dade2; }
-.fixed-val { color: #aaa; font-style: italic; margin-top: 4px; }
-canvas { display: block; margin: 8px 0; background: #111; border: 1px solid #333; width: 100%; height: auto; }
+input[type=number]:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+.fixed-val { color: var(--muted2); font-style: italic; margin-top: 4px; }
+canvas { display: block; margin: 8px 0; background: var(--canvas-bg); border: 1px solid var(--canvas-border); width: 100%; height: auto; }
 table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 0.85em; }
-th { background: #2a2a2a; color: #f0c674; text-align: right; padding: 4px 8px; border-bottom: 2px solid #f0c674; position: sticky; top: 0; }
+th { background: var(--panel); color: var(--gold); text-align: right; padding: 4px 8px; border-bottom: 2px solid var(--gold); position: sticky; top: 0; }
 th:first-child { text-align: center; }
-td { text-align: right; padding: 3px 8px; border-bottom: 1px solid #333; }
-td:first-child { text-align: center; color: #aaa; }
-tr:hover td { background: #2a2a2a; }
+td { text-align: right; padding: 3px 8px; border-bottom: 1px solid var(--line); }
+td:first-child { text-align: center; color: var(--muted2); }
+tr:hover td { background: var(--panel); }
 td.headroom-critical { color: #e74c3c; font-weight: bold; }
 td.headroom-ok { color: #2ecc71; }
 td.headroom-warn { color: #f39c12; font-weight: bold; }
-td.headroom-open { color: #888; font-style: italic; }
-.summary { background: #2a2a2a; padding: 10px 14px; margin: 8px 0; border-radius: 4px; font-size: 0.9em; }
-.summary .highlight { color: #5dade2; font-weight: bold; }
+td.headroom-open { color: var(--muted); font-style: italic; }
+.summary { background: var(--panel); padding: 10px 14px; margin: 8px 0; border-radius: 4px; font-size: 0.9em; }
+.summary .highlight { color: var(--accent); font-weight: bold; }
 .summary .warn { color: #f39c12; }
 .summary .ok { color: #2ecc71; }
-.notes { color: #777; font-size: 0.8em; margin-top: 8px; }
+.summary .fine-print { margin-top: 4px; color: var(--notes); font-size: 0.85em; }
+.muted { color: var(--muted); }
+.notes { color: var(--notes); font-size: 0.8em; margin-top: 8px; }
 .wl-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-weight: bold; color: #111; }
 .wl-green { background: #2ecc71; }
 .wl-yellow { background: #f1c40f; }
@@ -58,18 +111,61 @@ td.headroom-open { color: #888; font-style: italic; }
 .wl-checks .fail { color: #e74c3c; font-weight: bold; }
 .dir-toggle { display: flex; gap: 6px; margin-top: 4px; }
 .dir-btn {
-    background: #2a2a2a; color: #aaa; border: 1px solid #555;
+    background: var(--panel); color: var(--muted2); border: 1px solid var(--border);
     padding: 4px 14px; font-size: 0.95em; cursor: pointer;
     font-family: 'Segoe UI', Consolas, monospace; border-radius: 3px;
 }
-.dir-btn:hover { border-color: #5dade2; color: #d0d0d0; }
-.dir-btn.active { background: #1a4a6a; color: #5dade2; border-color: #5dade2; font-weight: bold; }
+.dir-btn:hover { border-color: var(--accent); color: var(--hover-fg); }
+.dir-btn.active { background: var(--dir-active-bg); color: var(--accent); border-color: var(--accent); font-weight: bold; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.plat-row { font-style: italic; color: var(--gold); }
+@media print {
+    :root, html, html[data-theme="dark"], html[data-theme="light"] {
+        --bg: #ffffff;
+        --fg: #222222;
+        --accent: #1a6aa3;
+        --gold: #8a6a12;
+        --muted: #555555;
+        --muted2: #444444;
+        --notes: #555555;
+        --panel: #ffffff;
+        --border: #bbbbbb;
+        --line: #cccccc;
+        --section-border: #cccccc;
+        --canvas-bg: #ffffff;
+        --canvas-border: #cccccc;
+        --grid: #e8e8e8;
+        --grid-label: #666666;
+        --pole: #666666;
+        --pole-stroke: #444444;
+        --legend-fg: #222222;
+        --open-hr: #888888;
+        --dir-active-bg: #d6ebf7;
+        --hover-fg: #111111;
+        color-scheme: light;
+    }
+    .theme-toggle { display: none; }
+    body { background: #fff; color: #222; }
+    canvas { background: #fff; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
 </style>
 </head>
 <body>
-<h1>IRC Spiral Stair Checker v1.25</h1>
-<div class="subtitle">Spiral Stair Headroom Calculator — nose-to-soffit at each step</div>
+<div class="page-header">
+    <div>
+        <h1>IRC Spiral Stair Checker v1.26</h1>
+        <div class="subtitle">Spiral Stair Headroom Calculator — nose-to-soffit at each step</div>
+    </div>
+    <div class="control-group theme-toggle">
+        <label>Theme</label>
+        <span class="sr-only">Color theme. Use Light when printing.</span>
+        <div class="dir-toggle" role="group" aria-label="Color theme">
+            <button type="button" id="themeDark" class="dir-btn active">Dark</button>
+            <button type="button" id="themeLight" class="dir-btn">Light</button>
+        </div>
+    </div>
+</div>
 
 <div class="section-label">Controls</div>
 <div class="controls">
@@ -307,8 +403,31 @@ function hrClassAndStatus(headroom) {
     return { hrClass: 'headroom-ok', status: 'PLENTY' };
 }
 
+function cssVar(name, fallback) {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return v || fallback;
+}
+
+function themeColors() {
+    return {
+        canvasBg: cssVar('--canvas-bg', '#111'),
+        accent: cssVar('--accent', '#5dade2'),
+        gold: cssVar('--gold', '#f0c674'),
+        muted: cssVar('--muted', '#888'),
+        muted2: cssVar('--muted2', '#aaa'),
+        notes: cssVar('--notes', '#777'),
+        grid: cssVar('--grid', '#222'),
+        gridLabel: cssVar('--grid-label', '#555'),
+        pole: cssVar('--pole', '#888'),
+        poleStroke: cssVar('--pole-stroke', '#aaa'),
+        legendFg: cssVar('--legend-fg', '#d0d0d0'),
+        openHr: cssVar('--open-hr', '#666'),
+        fg: cssVar('--fg', '#d0d0d0')
+    };
+}
+
 function stepColor(headroom) {
-    if (headroom == null) return '#666';
+    if (headroom == null) return themeColors().openHr;
     if (headroom < IRC_MIN_HR) return '#e74c3c';
     if (headroom < 84) return '#f39c12';
     return '#3498db';
@@ -441,8 +560,7 @@ function calc() {
     }
 
     const platRow = document.createElement('tr');
-    platRow.style.fontStyle = 'italic';
-    platRow.style.color = '#f0c674';
+    platRow.className = 'plat-row';
     const platStartDeg = nPies * THETA;
     const dirWord = climbCCW ? 'CCW' : 'CW';
     platRow.innerHTML = '<td>PLATFORM</td><td>' + FLOOR_H.toFixed(2) + '</td><td>' +
@@ -470,9 +588,9 @@ function calc() {
     }
     const wlChecks =
         '<ul class="wl-checks">' +
-        checkLi(!radiusFail, 'Radius ≤ 24½" <span style="color:#888">(center of pole to walkline = ' + WALK_RAD.toFixed(2) + '")</span>') +
-        checkLi(!plateFail, 'Tread depth ≥ 6¾" <span style="color:#888">(plate = ' + Lphys.toFixed(3) + '")</span>') +
-        checkLi(!goingFail, 'Going at walkline ≥ 6" <span style="color:#888">(going = ' + Lgoing.toFixed(3) + '")</span>') +
+        checkLi(!radiusFail, 'Radius ≤ 24½" <span class="muted">(center of pole to walkline = ' + WALK_RAD.toFixed(2) + '")</span>') +
+        checkLi(!plateFail, 'Tread depth ≥ 6¾" <span class="muted">(plate = ' + Lphys.toFixed(3) + '")</span>') +
+        checkLi(!goingFail, 'Going at walkline ≥ 6" <span class="muted">(going = ' + Lgoing.toFixed(3) + '")</span>') +
         '</ul>';
 
     document.getElementById('summaryBox').innerHTML =
@@ -498,7 +616,7 @@ function calc() {
               '"</span> (at Step #' + minHRStep + ')'
             : 'Min/max nose headroom: <span class="highlight">n/a</span> (open well)') + '</p>' +
         '<p style="margin-top:6px;">' + hrStatus + '</p>' +
-        '<p style="margin-top:4px; color:#777; font-size:0.85em;">' + nRises +
+        '<p class="fine-print">' + nRises +
         ' uniform risers × ' + RISE.toFixed(2) + '" = ' + FLOOR_H.toFixed(2) +
         '" floor-to-floor (incl. last rise onto platform). Pies 1–' + nPies +
         '. Platform 36×36" at ' + FLOOR_H.toFixed(2) +
@@ -526,14 +644,15 @@ function sizeCanvas() {
 function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INNER, SPIRAL_DIA, steps, platUnderside, platHeight, nPies, FLOOR_H, Lphys, Lgoing, ORIENT) {
     const { ctx, W, H } = sizeCanvas();
 
-    ctx.fillStyle = '#111';
+    const tc = themeColors();
+    ctx.fillStyle = tc.canvasBg;
     ctx.fillRect(0, 0, W, H);
 
     const planW = W * 0.48;
     const margin = 85; // room for HR: xx.x" past the right frame
     const titleH = 24;
 
-    ctx.fillStyle = '#5dade2';
+    ctx.fillStyle = tc.accent;
     ctx.font = 'bold 14px monospace';
     ctx.textAlign = 'left';
     ctx.fillText('PLAN VIEW — Top Down (color = nose headroom)', margin, titleH);
@@ -542,21 +661,21 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INN
     const planCx = margin + planW / 2;
     const planCy = margin + H / 2;
 
-    ctx.strokeStyle = '#555';
+    ctx.strokeStyle = tc.gridLabel;
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.arc(planCx, planCy, RADIUS * planScale, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.fillStyle = '#555';
+    ctx.fillStyle = tc.gridLabel;
     ctx.font = '10px monospace';
     ctx.textAlign = 'left';
     ctx.fillText(SPIRAL_DIA.toFixed(0) + '" dia', planCx + RADIUS * planScale + 4, planCy - 4);
 
-    ctx.fillStyle = '#888';
+    ctx.fillStyle = tc.pole;
     ctx.beginPath();
     ctx.arc(planCx, planCy, POLE_RAD * planScale, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = '#aaa';
+    ctx.strokeStyle = tc.poleStroke;
     ctx.lineWidth = 1;
     ctx.stroke();
 
@@ -617,7 +736,7 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INN
         ctx.beginPath();
         ctx.arc(nx, ny, 3.5, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = '#111';
+        ctx.strokeStyle = tc.canvasBg;
         ctx.lineWidth = 1;
         ctx.stroke();
         ctx.font = '9px monospace';
@@ -665,7 +784,7 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INN
     spoke(platAngleRad, '#2ecc71', []);
     spoke(platEndRad, '#2ecc71', [4, 3]);
 
-    ctx.fillStyle = '#777';
+    ctx.fillStyle = tc.notes;
     ctx.font = '10px monospace';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
@@ -678,7 +797,7 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INN
     ctx.fillText('Walkline @ ' + WALK_RAD.toFixed(1) + '"  plate ' + Lphys.toFixed(2) + '"  going ' + Lgoing.toFixed(2) + '"', margin, H - 22);
 
     const elevW = W * 0.48;
-    ctx.fillStyle = '#5dade2';
+    ctx.fillStyle = tc.accent;
     ctx.font = 'bold 14px monospace';
     ctx.fillText('ELEVATION — nose headroom to soffit above', W - elevW - margin, titleH);
 
@@ -687,7 +806,7 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INN
     const elevBottom = H - 60;
     const elevRight = W - margin - 20;
 
-    ctx.strokeStyle = '#222';
+    ctx.strokeStyle = tc.grid;
     ctx.lineWidth = 1;
     for (let h = 0; h <= FLOOR_H; h += 10) {
         const y = elevBottom - h * elevScale;
@@ -695,19 +814,19 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INN
         ctx.moveTo(elevLeft, y);
         ctx.lineTo(elevRight, y);
         ctx.stroke();
-        ctx.fillStyle = '#555';
+        ctx.fillStyle = tc.gridLabel;
         ctx.font = '9px monospace';
         ctx.textAlign = 'right';
         ctx.fillText(h + '"', elevLeft - 4, y + 3);
     }
 
-    ctx.strokeStyle = '#888';
+    ctx.strokeStyle = tc.muted;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(elevLeft, elevBottom);
     ctx.lineTo(elevRight, elevBottom);
     ctx.stroke();
-    ctx.fillStyle = '#aaa';
+    ctx.fillStyle = tc.muted2;
     ctx.font = '10px monospace';
     ctx.textAlign = 'left';
     ctx.fillText('Floor (#0)', elevLeft + 4, elevBottom + 16);
@@ -725,7 +844,7 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INN
     ctx.fillText('Platform Underside', elevLeft + 4, platLineY - 4);
 
     const platTopY = elevBottom - platHeight * elevScale;
-    ctx.strokeStyle = '#f0c674';
+    ctx.strokeStyle = tc.gold;
     ctx.lineWidth = 2;
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
@@ -733,7 +852,7 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INN
     ctx.lineTo(elevRight, platTopY);
     ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = '#f0c674';
+    ctx.fillStyle = tc.gold;
     ctx.fillText('Platform Top', elevLeft + 4, platTopY - 4);
 
     for (let i = 0; i <= nPies; i++) {
@@ -760,7 +879,7 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INN
         if (stepData && stepData.headroom != null && stepData.soffitZ != null) {
             const hrTop = elevBottom - stepData.soffitZ * elevScale;
             const hrY = y + 3;  // Position near the step
-            ctx.strokeStyle = '#f0c674';
+            ctx.strokeStyle = tc.gold;
             ctx.lineWidth = 1;
             ctx.setLineDash([2, 2]);
             ctx.beginPath();
@@ -768,14 +887,14 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INN
             ctx.lineTo(elevRight + 45, y);
             ctx.stroke();
             ctx.setLineDash([]);
-            ctx.fillStyle = '#f0c674';
+            ctx.fillStyle = tc.gold;
             ctx.font = '9px monospace';
             ctx.fillText('HR:' + stepData.headroom.toFixed(1) + '"', elevRight + 49, hrY);
         }
     }
 
     const dimX = elevLeft + 10;
-    ctx.strokeStyle = '#aaa';
+    ctx.strokeStyle = tc.muted2;
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 3]);
     ctx.beginPath();
@@ -783,7 +902,7 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INN
     ctx.lineTo(dimX, elevBottom);
     ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = '#aaa';
+    ctx.fillStyle = tc.muted2;
     ctx.beginPath();
     ctx.moveTo(dimX - 4, platTopY + 6);
     ctx.lineTo(dimX, platTopY);
@@ -802,34 +921,34 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INN
     const legendY = H - 44;
     ctx.fillStyle = '#e74c3c';
     ctx.fillRect(legendX, legendY, 12, 12);
-    ctx.fillStyle = '#d0d0d0';
+    ctx.fillStyle = tc.legendFg;
     ctx.font = '10px monospace';
     ctx.textAlign = 'left';
     ctx.fillText('HR < 78"', legendX + 16, legendY + 10);
 
     ctx.fillStyle = '#f39c12';
     ctx.fillRect(legendX + 90, legendY, 12, 12);
-    ctx.fillStyle = '#d0d0d0';
+    ctx.fillStyle = tc.legendFg;
     ctx.fillText('HR 78–84"', legendX + 106, legendY + 10);
 
     ctx.fillStyle = '#3498db';
     ctx.fillRect(legendX + 190, legendY, 12, 12);
-    ctx.fillStyle = '#d0d0d0';
+    ctx.fillStyle = tc.legendFg;
     ctx.fillText('HR 84"+', legendX + 206, legendY + 10);
 
     // Walkline depth legend
     const wlLegY = H - 26;
     ctx.fillStyle = '#2ecc71';
     ctx.fillRect(legendX, wlLegY, 12, 12);
-    ctx.fillStyle = '#d0d0d0';
+    ctx.fillStyle = tc.legendFg;
     ctx.fillText('WL > 7.5"', legendX + 16, wlLegY + 10);
     ctx.fillStyle = '#f1c40f';
     ctx.fillRect(legendX + 90, wlLegY, 12, 12);
-    ctx.fillStyle = '#d0d0d0';
+    ctx.fillStyle = tc.legendFg;
     ctx.fillText('WL 6.75–7.5"', legendX + 106, wlLegY + 10);
     ctx.fillStyle = '#e74c3c';
     ctx.fillRect(legendX + 210, wlLegY, 12, 12);
-    ctx.fillStyle = '#d0d0d0';
+    ctx.fillStyle = tc.legendFg;
     ctx.fillText('WL < 6.75"', legendX + 226, wlLegY + 10);
 }
 
@@ -847,9 +966,42 @@ document.getElementById('dirCCW').addEventListener('click', function () {
     calc();
 });
 
+const THEME_KEY = 'spiralStairTheme';
+
+function applyTheme(theme, persist) {
+    const t = theme === 'light' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', t);
+    const meta = document.querySelector('meta[name="color-scheme"]');
+    if (meta) meta.setAttribute('content', t === 'light' ? 'light dark' : 'dark light');
+    const darkBtn = document.getElementById('themeDark');
+    const lightBtn = document.getElementById('themeLight');
+    if (darkBtn) darkBtn.classList.toggle('active', t === 'dark');
+    if (lightBtn) lightBtn.classList.toggle('active', t === 'light');
+    if (persist) {
+        try { localStorage.setItem(THEME_KEY, t); } catch (e) {}
+    }
+    calc();
+}
+
+document.getElementById('themeDark').addEventListener('click', function () { applyTheme('dark', true); });
+document.getElementById('themeLight').addEventListener('click', function () { applyTheme('light', true); });
+
+window.addEventListener('beforeprint', function () {
+    applyTheme('light', false);
+});
+window.addEventListener('afterprint', function () {
+    let saved = 'dark';
+    try { saved = localStorage.getItem(THEME_KEY) || 'dark'; } catch (e) {}
+    applyTheme(saved, false);
+});
+
 window.addEventListener('resize', calc);
 
-calc();
+(function initTheme() {
+    let saved = 'dark';
+    try { saved = localStorage.getItem(THEME_KEY) || 'dark'; } catch (e) {}
+    applyTheme(saved, false);
+})();
 </script>
 </body>
 </html>
