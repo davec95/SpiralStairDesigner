@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IRC Spiral Stair Checker v1.28 — Spiral Stair Headroom Calculator</title>
+<title>IRC Spiral Stair Checker v1.29 — Spiral Stair Headroom Calculator</title>
 <!-- Security: CSP meta tags (client-side mitigation) -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -155,7 +155,7 @@ td.headroom-open { color: var(--muted); font-style: italic; }
 <body>
 <div class="page-header">
     <div>
-        <h1>IRC Spiral Stair Checker v1.28</h1>
+        <h1>IRC Spiral Stair Checker v1.29</h1>
         <div class="subtitle">Spiral Stair Headroom Calculator — nose-to-soffit at each step</div>
     </div>
     <div class="control-group theme-toggle">
@@ -670,7 +670,7 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INN
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    const wlCol = walklineColor(Lphys, Lgoing);
+    const wlCol = walklineColor(Lgoing);
     // Full walkline circle (12" from narrow end of tread) — faint track
     ctx.strokeStyle = wlCol;
     ctx.globalAlpha = 0.25;
@@ -783,9 +783,7 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INN
         '  ·  orient ' + ORIENT + '°', margin, H - 52);
     ctx.fillText('Dots = nose. Pie # at mid-going. Overhead PLATFORM = going under the square (partial = sliver).', margin, H - 66);
     ctx.fillText((90 / THETA).toFixed(1) + ' steps per 90°', margin, H - 38);
-    ctx.fillStyle = wlCol;
-    ctx.font = 'bold 11px monospace';
-    ctx.fillText('Walkline @ ' + WALK_RAD.toFixed(1) + '"  plate ' + Lphys.toFixed(2) + '"  going ' + Lgoing.toFixed(2) + '"', margin, H - 22);
+
 
     const elevW = W * 0.48;
     ctx.fillStyle = tc.accent;
