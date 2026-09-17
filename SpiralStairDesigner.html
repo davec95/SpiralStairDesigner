@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IRC Spiral Stair Checker v1.26 — Spiral Stair Headroom Calculator</title>
+<title>IRC Spiral Stair Checker v1.27 — Spiral Stair Headroom Calculator</title>
 <!-- Security: CSP meta tags (client-side mitigation) -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -154,7 +154,7 @@ td.headroom-open { color: var(--muted); font-style: italic; }
 <body>
 <div class="page-header">
     <div>
-        <h1>IRC Spiral Stair Checker v1.26</h1>
+        <h1>IRC Spiral Stair Checker v1.27</h1>
         <div class="subtitle">Spiral Stair Headroom Calculator — nose-to-soffit at each step</div>
     </div>
     <div class="control-group theme-toggle">
@@ -212,9 +212,9 @@ td.headroom-open { color: var(--muted); font-style: italic; }
         <input type="number" id="nosing" value="1.25" step="0.25" min="0.75" max="1.25">
     </div>
     <div class="control-group">
-        <label for="orient">Orientation offset: <span class="val" id="orientVal">99</span>° (step 1 heel from top)</label>
+        <label for="orient">Orientation offset: <span class="val" id="orientVal">8</span>° (step 1 heel from top)</label>
         <span class="sr-only">Orientation offset in degrees, range 0 to 359</span>
-        <input type="range" id="orient" min="0" max="359" step="1" value="99">
+        <input type="range" id="orient" min="0" max="359" step="1" value="8">
     </div>
     <div class="control-group">
         <label>Ascent (from above)</label>
@@ -332,7 +332,7 @@ function syncRiseSlider(floorH) {
     return { nRises: n, rise };
 }
 
-let climbCCW = false; // false = CW ascent as viewed from above (default)
+let climbCCW = true; // true = CCW ascent as viewed from above (default)
 
 /**
  * Positive-measure overlap of pie i going ((i−1)·θ, i·θ] with the 90° landing
