@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IRC Spiral Stair Checker v1.27 — Spiral Stair Headroom Calculator</title>
+<title>IRC Spiral Stair Checker v1.28 — Spiral Stair Headroom Calculator</title>
 <!-- Security: CSP meta tags (client-side mitigation) -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -103,6 +103,7 @@ td.headroom-open { color: var(--muted); font-style: italic; }
 .notes { color: var(--notes); font-size: 0.8em; margin-top: 8px; }
 .wl-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-weight: bold; color: #111; }
 .wl-green { background: #2ecc71; }
+.wl-orange { background: #f39c12; }
 .wl-yellow { background: #f1c40f; }
 .wl-red { background: #e74c3c; color: #fff; }
 .wl-checks { list-style: none; margin: 8px 0 0 0; padding: 0; }
@@ -154,7 +155,7 @@ td.headroom-open { color: var(--muted); font-style: italic; }
 <body>
 <div class="page-header">
     <div>
-        <h1>IRC Spiral Stair Checker v1.27</h1>
+        <h1>IRC Spiral Stair Checker v1.28</h1>
         <div class="subtitle">Spiral Stair Headroom Calculator — nose-to-soffit at each step</div>
     </div>
     <div class="control-group theme-toggle">
@@ -230,8 +231,8 @@ td.headroom-open { color: var(--muted); font-style: italic; }
     Outer radius = <span id="radiusVal">36</span>"
     &nbsp;|&nbsp; Walkline r = narrow end of tread + 12" = <span id="walkPathVal">14.25</span>"
     &nbsp;|&nbsp; Landing plan span = 90° <span id="landDirLabel">clockwise</span> from last pie nose
-    &nbsp;|&nbsp; Walkline depth <span id="wlPlateBadge" class="wl-badge wl-green">—</span>
-    &nbsp;<span id="wlGoingBadge" class="wl-badge wl-green">—</span>
+    &nbsp;|&nbsp; Walkline depth <span id="wlGoingBadge" class="wl-badge wl-green">—</span>
+     &nbsp;<span class="muted">nosing to nosing at the walkline</span>
     &nbsp;|&nbsp; Walkline radius (calculated as pole radius, pole to tread gap + 12") <span id="wlRadBadge" class="wl-badge wl-green">14.25"</span>
 </div>
 
@@ -267,9 +268,8 @@ td.headroom-open { color: var(--muted); font-style: italic; }
     <p><b>Orientation offset</b> rotates the whole plan 0–359° (1° steps). 0° = step 1 heel at the top. Positive offset is in the climb direction. <b>CW/CCW</b> is ascent as viewed from above.</p>
     <p>Step #0 = ground at 0°. Steps #1…N−1 are pie treads. <b>Rises</b> N is floor-to-floor count including the last rise onto the platform; uniform rise = floor-to-floor / N, constrained to 7.00–9.5″. <b>Height</b> of pie i = i × rise. Platform height = N × rise = floor-to-floor. Open well = nothing in plan above that nose.</p>
     <p>IRC R311.7.2 minimum is 78" (6'8"), measured vertically from the nosing.</p>
-    <p><b>Walkline</b> is 12" out from the narrow end of the tread (pole radius + pole-to-tread gap + 12"), not from pole center. Nosing-to-nosing depth = r_wl · θ_rad = (2π r_wl) / treads-per-turn. Plate depth = going + 1.25" (½" past nose + ¾" past heel — IRC legal max overhang). Color on the plan spiral: red if going < 6.00" <i>or</i> plate < 6.75"; yellow if plate is 6.75–7.49"; green if plate ≥ 7.5". Three walkline checks: radius ≤ 24½" (center of pole to walkline), tread depth (plate) ≥ 6¾", going at walkline ≥ 6".</p>
-    <p><b>Going</b> is the arc length along the walkline (12" from the narrow end of the tread) between the nosings of two adjacent treads — i.e. r_wl · θ (radians). At θ = 24.5°, 4" pole, 0.25" gap this is ~6.09". It's the separation between consecutive nosings measured at the walking path.</p>
-    <p><b>Plate</b> is the usable tread arc length at the walkline: going + nosing (½" past the nose, ¾" past the heel at the 1.25" IRC max). This is what you actually step on — the tread extends slightly beyond each nosing so the tread material doesn't end right at the nosing line. Two independent header badges: plate colors on plate alone (≥ 7.5" green, 6.75–7.49" yellow, < 6.75" red); going colors on going alone (≥ 6.00" green, < 6.00" red). They do not share a class — a yellow plate no longer paints the going, and a red going no longer paints the plate.</p>
+    <p><b>Walkline</b> is 12" out from the narrow end of the tread (pole radius + pole-to-tread gap + 12"), not from pole center. Walkline depth means <b>nosing to nosing at the walkline</b>: r_wl · θ_rad = (2π r_wl) / treads-per-turn. Color on the plan spiral and header badge: green when depth &gt; 6.75", orange when exactly 6.75", and red when less than 6.75". The walkline check requires depth ≥ 6¾" and radius ≤ 24½" (center of pole to walkline).</p>
+    <p><b>Plate</b> remains the usable tread arc length at the walkline: going + nosing overhang. It is reported in the summary for reference, but is not used for the walkline depth color.</p>
 </div>
 
 <script>
@@ -281,9 +281,10 @@ const WL_OFFSET = 12;          // IRC: 12" from inner rail (narrow end of tread)
 const WL_OVERHANG = 1.25;      // default / IRC legal max: ½" past nose + ¾" past heel
 const NOSING_MIN = 0.75;
 const NOSING_MAX = 1.25;
-const WL_GREEN = 7.5;          // plate depth ≥ 7.5"
-const WL_YELLOW = 6.75;        // plate depth 6.75–7.5"  (tread depth ≥ 6¾")
-const WL_GOING_MIN = 6.00;     // nosing-to-nosing at walkline
+const WL_GREEN = 6.75;          // walkline depth > 6.75" is green
+const WL_ORANGE = 6.75;         // exact 6.75" is orange
+const WL_GOING_MIN = 6.75;      // nosing-to-nosing at walkline
+
 const WL_RADIUS_MAX = 24.5;    // checklist: center of pole to walkline ≤ 24½"
 const WL_RADIUS_BADGE_MAX = 24; // header badge: green ≤ 24", red if not (no yellow)
 const POLE_GAP_DEFAULT = 0.25;
@@ -433,23 +434,18 @@ function stepColor(headroom) {
     return '#3498db';
 }
 
-/** Walkline color: red if going < 6.00" or plate < 6.75"; green if plate ≥ 7.5"; else yellow. */
-function walklineColor(Lphys, Lgoing) {
-    if (Lgoing < WL_GOING_MIN || Lphys < WL_YELLOW) return '#e74c3c';
-    if (Lphys >= WL_GREEN) return '#2ecc71';
-    return '#f1c40f';
+/** Walkline color: >6.75" green, exactly 6.75" orange, less red. */
+function walklineColor(Lgoing) {
+    if (Lgoing > WL_GREEN) return '#2ecc71';
+    if (Math.abs(Lgoing - WL_ORANGE) <= 1e-9) return '#f39c12';
+    return '#e74c3c';
 }
 
-/** Plate badge: plate depth only (6.75" / 7.5"). Going does not affect this class. */
-function walklinePlateBadgeClass(Lphys) {
-    if (Lphys < WL_YELLOW) return 'wl-badge wl-red';
-    if (Lphys >= WL_GREEN) return 'wl-badge wl-green';
-    return 'wl-badge wl-yellow';
-}
-
-/** Going badge: nosing-to-nosing only (IRC 6.00"). Plate does not affect this class. */
+/** Walkline badge: nosing-to-nosing depth at the walkline. */
 function walklineGoingBadgeClass(Lgoing) {
-    return Lgoing < WL_GOING_MIN ? 'wl-badge wl-red' : 'wl-badge wl-green';
+    if (Lgoing > WL_GREEN) return 'wl-badge wl-green';
+    if (Math.abs(Lgoing - WL_ORANGE) <= 1e-9) return 'wl-badge wl-orange';
+    return 'wl-badge wl-red';
 }
 
 function walklineRadiusBadgeClass(walkRad) {
@@ -499,13 +495,10 @@ function calc() {
     const Lphys = Lgoing + NOSING;                                       // plate: going + nosing overhang
     const LgoingOuter = RADIUS * thetaRad;
     const LphysOuter = LgoingOuter + NOSING;
-    const wlColor = walklineColor(Lphys, Lgoing);                        // Color uses unrounded values
-    const plateBadge = document.getElementById('wlPlateBadge');
-    plateBadge.className = walklinePlateBadgeClass(Lphys);
-    plateBadge.textContent = Lphys.toFixed(2) + '" plate';
+    const wlColor = walklineColor(Lgoing);                                // Color uses unrounded values
     const goingBadge = document.getElementById('wlGoingBadge');
     goingBadge.className = walklineGoingBadgeClass(Lgoing);
-    goingBadge.textContent = '(going ' + Lgoing.toFixed(2) + '")';
+    goingBadge.textContent = Lgoing.toFixed(2) + '"';
     const radBadge = document.getElementById('wlRadBadge');
     radBadge.className = walklineRadiusBadgeClass(WALK_RAD);
     radBadge.textContent = WALK_RAD.toFixed(2) + '"';
@@ -580,7 +573,6 @@ function calc() {
             : '<span class="ok">✓ Minimum nose headroom adequate (≥78")</span>');
 
     const goingFail = Lgoing < WL_GOING_MIN;
-    const plateFail = Lphys < WL_YELLOW;
     const radiusFail = WALK_RAD > WL_RADIUS_MAX + 1e-9;
     function checkLi(ok, label) {
         return '<li class="' + (ok ? 'pass' : 'fail') + '">' +
@@ -589,8 +581,7 @@ function calc() {
     const wlChecks =
         '<ul class="wl-checks">' +
         checkLi(!radiusFail, 'Radius ≤ 24½" <span class="muted">(center of pole to walkline = ' + WALK_RAD.toFixed(2) + '")</span>') +
-        checkLi(!plateFail, 'Tread depth ≥ 6¾" <span class="muted">(plate = ' + Lphys.toFixed(3) + '")</span>') +
-        checkLi(!goingFail, 'Going at walkline ≥ 6" <span class="muted">(going = ' + Lgoing.toFixed(3) + '")</span>') +
+        checkLi(!goingFail, 'Nosing-to-nosing depth at walkline ≥ 6¾" <span class="muted">(depth = ' + Lgoing.toFixed(3) + '")</span>') +
         '</ul>';
 
     document.getElementById('summaryBox').innerHTML =
@@ -716,7 +707,7 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INN
         ctx.lineTo(planCx + RADIUS * planScale * Math.cos(endAngle), planCy + RADIUS * planScale * Math.sin(endAngle));
         ctx.stroke();
 
-        // Walkline arc on this pie — 12" from narrow end of tread, colored by plate depth
+        // Walkline arc on this pie — 12" from narrow end of tread, colored by nosing-to-nosing depth
         ctx.strokeStyle = wlCol;
         ctx.lineWidth = 4;
         ctx.globalAlpha = 1;
@@ -941,15 +932,15 @@ function drawViz(THETA, RISE, TREAD_THICK, WALK_RAD, RADIUS, POLE_RAD, TREAD_INN
     ctx.fillStyle = '#2ecc71';
     ctx.fillRect(legendX, wlLegY, 12, 12);
     ctx.fillStyle = tc.legendFg;
-    ctx.fillText('WL > 7.5"', legendX + 16, wlLegY + 10);
-    ctx.fillStyle = '#f1c40f';
-    ctx.fillRect(legendX + 90, wlLegY, 12, 12);
+    ctx.fillText('WL > 6.75"', legendX + 16, wlLegY + 10);
+    ctx.fillStyle = '#f39c12';
+    ctx.fillRect(legendX + 98, wlLegY, 12, 12);
     ctx.fillStyle = tc.legendFg;
-    ctx.fillText('WL 6.75–7.5"', legendX + 106, wlLegY + 10);
+    ctx.fillText('WL = 6.75"', legendX + 114, wlLegY + 10);
     ctx.fillStyle = '#e74c3c';
-    ctx.fillRect(legendX + 210, wlLegY, 12, 12);
+    ctx.fillRect(legendX + 198, wlLegY, 12, 12);
     ctx.fillStyle = tc.legendFg;
-    ctx.fillText('WL < 6.75"', legendX + 226, wlLegY + 10);
+    ctx.fillText('WL < 6.75"', legendX + 214, wlLegY + 10);
 }
 
 ['theta', 'nRises', 'thick', 'floorH', 'postDia', 'poleGap', 'spiralDia', 'nosing', 'orient'].forEach(function (id) {
