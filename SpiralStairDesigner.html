@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IRC Spiral Stair Checker v1.31 — Spiral Stair Headroom Calculator</title>
+<title>IRC Spiral Stair Checker v1.32 — Spiral Stair Headroom Calculator</title>
 <!-- Security: CSP meta tags (client-side mitigation) -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -155,7 +155,7 @@ td.headroom-open { color: var(--muted); font-style: italic; }
 <body>
 <div class="page-header">
     <div>
-        <h1>IRC Spiral Stair Checker v1.31</h1>
+        <h1>IRC Spiral Stair Checker v1.32</h1>
         <div class="subtitle">Spiral Stair Headroom Calculator — nose-to-soffit at each step</div>
     </div>
     <div class="control-group theme-toggle">
@@ -171,9 +171,9 @@ td.headroom-open { color: var(--muted); font-style: italic; }
 <div class="section-label">Controls</div>
 <div class="controls">
     <div class="control-group">
-        <label for="theta">Theta (degrees per step): <span class="val" id="thetaVal">27.7</span>°</label>
+        <label for="theta">Theta (degrees per step): <span class="val" id="thetaVal">30.0</span>°</label>
         <span class="sr-only">Theta degrees per step, range 10 to 60</span>
-        <input type="range" id="theta" min="10" max="60" step="0.1" value="27.7">
+        <input type="range" id="theta" min="10" max="60" step="0.1" value="30.0">
     </div>
     <div class="control-group">
         <label for="nRises">Rises (floor→floor, incl. onto platform): <span class="val" id="nRisesVal">17</span>
@@ -213,9 +213,9 @@ td.headroom-open { color: var(--muted); font-style: italic; }
         <input type="number" id="nosing" value="1.25" step="0.25" min="0.75" max="1.25">
     </div>
     <div class="control-group">
-        <label for="orient">Orientation offset: <span class="val" id="orientVal">7</span>° (step 1 heel from top)</label>
+        <label for="orient">Orientation offset: <span class="val" id="orientVal">330</span>° (step 1 heel from top)</label>
         <span class="sr-only">Orientation offset in degrees, range 0 to 359</span>
-        <input type="range" id="orient" min="0" max="359" step="1" value="7">
+        <input type="range" id="orient" min="0" max="359" step="1" value="330">
     </div>
     <div class="control-group">
         <label>Ascent (from above)</label>
